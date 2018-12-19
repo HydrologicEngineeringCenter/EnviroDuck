@@ -214,7 +214,7 @@ public class MainWindow extends javax.swing.JFrame {
         getContentPane().setLayout(null);
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
-        setTitle("Enviro Duck");
+        setTitle("Enviro Duck  1.0.1");
         setResizable(false);
         jDSSFilename.setToolTipText("The path to the DSS File");
         getContentPane().add(jDSSFilename);
@@ -499,7 +499,7 @@ public class MainWindow extends javax.swing.JFrame {
 
     /** jOutputPathButtonActionPerformed(java.awt.event.ActionEvent evt)
      *
-     *  This methode is called by the browse button beside the output path display field.
+     *  This method is called by the browse button beside the output path display field.
      *  It displays a file browser for the user to choose an output directory */
     
     private void jOutputPathButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jOutputPathButtonActionPerformed
@@ -787,15 +787,13 @@ public class MainWindow extends javax.swing.JFrame {
             
             for(int k = 0; k < stageAreaStr.length; ++k)
             {
-                // search the Catqalog for matches
-                pd.searchDSSCatalog("",(String) stagePathsModel.getValueAt(idx,1), stageAreaStr[k],"","", "", paths);
+                // search the Catalog for matches
+            	CondensedReference[] cr = pd.getCondensedCatalog("/*/"+stagePathsModel.getValueAt(idx,1)+"/"+stageAreaStr[k]+"/*/*/*/");
                 
                 // display each stage area curve on a row
-                for(int j = 0; j < paths.size(); ++j)
+                for(int j = 0; j < cr.length; ++j)
                 {
-                    buffer = ((String) paths.elementAt(j)).substring(1);
-                    parts = buffer.split("/");
-                    areaPathsModel.addRow(parts);
+                    areaPathsModel.addRow(cr[j].toString().substring(1).split("/"));
                 }
         
                 // if any stageArea Paths where found reset the selection to the first path
@@ -945,67 +943,15 @@ public class MainWindow extends javax.swing.JFrame {
         rv = pd.setDSSFileName(lastFile.getAbsolutePath(),true);
         
         
-        java.util.Vector paths = new java.util.Vector();
-        
-        rv = ts.searchDSSCatalog("",paths);
-        
-        outer: for ( int i = 0; i < paths.size(); ++i )
-        {
-            // get the selected path and added it to the display list
-            String selectedPath = (String) paths.elementAt(i);
-            
-            // break the selected path into segments
-            String[] selectedParts = selectedPath.substring(1).split("/");
-            
-            // make sure the c part is a legal part for stage data
-            boolean legal = false;
-            for( int j = 0; j < stageDataStr.length; ++j)
-            {
-                if(stageDataStr[j].equals(selectedParts[2]))
-                {
-                    legal = true;
-                    break;
-                }
-            }
-            
-            // if the cpart isnt legal go to the next path
-            if ( legal == false)
-            {
-                continue;
-            }           
-            
-           String currentPath; 
-           String[] currentParts; 
-           
-           ++i;
-           do
-           {    
-            //advance to the next path and get it
-            currentPath = (String) paths.elementAt(i);
-            currentParts = currentPath.substring(1).split("/");
-           } while ( selectedParts[0].equals(currentParts[0]) &&
-                     selectedParts[1].equals(currentParts[1]) &&
-                     selectedParts[2].equals(currentParts[2]) &&
-                     selectedParts[4].equals(currentParts[4]) &&
-                     selectedParts[5].equals(currentParts[5]) &&
-                     ++i < paths.size() );
-           
-           --i;
-           currentPath = (String) paths.elementAt(i);
-           currentParts = currentPath.substring(1).split("/");
-           
-           // make the display string that hold D range
-           java.util.Vector<String> path = new java.util.Vector<String>();
-           path.add(selectedParts[0]);
-           path.add(selectedParts[1]);
-           path.add(selectedParts[2]);
-           path.add(selectedParts[3] + " - " + currentParts[3]);
-           path.add(selectedParts[4]);
-           path.add(selectedParts[5]); 
-           
-           stagePathsModel.addRow(path);
-           
-        }
+		for (int j = 0; j < stageDataStr.length; ++j) {
+
+			CondensedReference[] cr = ts.getCondensedCatalog("/*/*/"+stageDataStr[j]+"/*/*/*/");
+
+			for (int i = 0; i < cr.length; i++) {
+				CondensedReference r = cr[i];
+				stagePathsModel.addRow(r.toString().substring(1).split("/"));
+			}
+		}
         
         jStageTable.clearSelection();
         
@@ -1242,27 +1188,6 @@ public class MainWindow extends javax.swing.JFrame {
         }
         
         
-        
-       /*for( int i = 0; i < l-1; ++i )
-        {
-            double lowKey = stageAreaCurve.xOrdinates[i];
-            double highKey = stageAreaCurve.xOrdinates[i+1];
-            
-            double lowArea = stageAreaCurve.yOrdinates[0][i];
-            double highArea = stageAreaCurve.yOrdinates[0][i+1];
-            
-            for( int j = 0; j < 10; ++j)
-            {
-                double shift = 0.1 * j;
-                double ishift = 1.0 - shift;
-                double key = lowKey + shift;
-                double val = ( highArea * shift ) + ( lowArea * ishift );
-                
-                table.put(key,val);
-        
-            }
-            
-        }*/
         
         table.put(stageAreaCurve.xOrdinates[l-1],stageAreaCurve.yOrdinates[0][l-1]);
         
