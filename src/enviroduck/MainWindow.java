@@ -6,7 +6,6 @@
 package enviroduck;
 
 /**
- *
  * @author  b4edhdwj
  */
 
@@ -1155,86 +1154,6 @@ public class MainWindow extends javax.swing.JFrame {
 
             areaTable.put(x, new TableRec(area2 - area1, 0));
         }
-    }
-
-    void makeAreaTableOld()
-    {
-        java.util.HashMap<Double,Double> table = new java.util.HashMap<Double,Double>((int)((stageAreaCurve.xOrdinates.length*10+1)/0.75),0.75f);
-        areaTable = new java.util.HashMap<Double,TableRec>((int)((stageAreaCurve.xOrdinates.length*10+1)/0.75),0.75f);
-
-        int l = stageAreaCurve.xOrdinates.length;
-
-        // the maximum values that will be added to the table
-        double min_val = Math.floor(stageAreaCurve.xOrdinates[0]);
-        double max_val = Math.ceil(stageAreaCurve.xOrdinates[l-1]);
-
-        // the current position in the stage area curve
-        int lowIndex = 0;
-        int highIndex = 1;
-
-        double lowStage = Math.round(stageAreaCurve.xOrdinates[lowIndex] * 10) / 10.0;
-        double highStage = Math.round(stageAreaCurve.xOrdinates[highIndex] * 10) / 10.0;
-
-        double lowArea = stageAreaCurve.yOrdinates[0][lowIndex];
-        double highArea = stageAreaCurve.yOrdinates[0][highIndex];
-
-        // the current value
-        double key = min_val;
-
-        //while( key <= max_val)
-        for (; key <= max_val; key =( (long)(key * 10) + 1 ) / 10.0)
-        {
-            if ( key == lowStage )
-            {
-                table.put(key,lowArea);
-            }
-            else if ( key == highStage )
-            {
-                table.put(key,highArea);
-            }
-            else if ( key < lowStage )
-            {
-                table.put(key,lowArea);
-            }
-            else if ( key > highStage )
-            {
-                while ( key > highStage )
-                {
-                    highIndex += 1;
-                    highStage = Math.round(stageAreaCurve.xOrdinates[highIndex] * 10) / 10.0;
-                    highArea = stageAreaCurve.yOrdinates[0][highIndex];
-
-                    lowIndex += 1;
-                    lowStage = Math.round(stageAreaCurve.xOrdinates[lowIndex] * 10) / 10.0;
-                    lowArea = stageAreaCurve.yOrdinates[0][lowIndex];
-
-                    key =( (long)(key * 10) - 1 ) / 10.0;
-                }
-            }
-            else
-            {
-                double range = highStage - lowStage;
-                double shift = (key - lowStage) / range;
-                double ishift = 1.0 - shift;
-
-                double val = (highArea * shift) + (lowArea * ishift);
-
-                table.put(key,val);
-            }
-        }
-        table.put(stageAreaCurve.xOrdinates[l-1],stageAreaCurve.yOrdinates[0][l-1]);
-
-
-        for( key = min_val; key < max_val; key += 1.0)
-        {
-            for( int j = 0; j < 10; ++j )
-            {
-                double k1 = key + (j* 0.1);
-                double k2 = key + ((j+1) * 0.1);
-                areaTable.put(k1, new TableRec(table.get(k2) - table.get(k1), 0));
-            }
-        }
-
     }
 
     /** clearAreaTable()
