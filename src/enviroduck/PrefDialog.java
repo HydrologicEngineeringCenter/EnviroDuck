@@ -355,16 +355,16 @@ public class PrefDialog extends javax.swing.JDialog {
             dataRemoveButton.setEnabled(true);
         }
     }
-    /** getDataList()
+    /** getCParts()
      *
      * returns: A colon deliminated list of acceptable C parts for gage data curves */ 
     
-    public String getDataList()
+    public String getCParts()
     {
         StringBuffer buffer = new StringBuffer();
         
         // get the list model
-        javax.swing.ListModel m = (javax.swing.ListModel) dataList.getModel();
+        javax.swing.ListModel m = dataList.getModel();
         
         // make the return string by concatinating the members of
         // the list model

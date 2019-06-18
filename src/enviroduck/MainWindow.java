@@ -11,7 +11,6 @@ package enviroduck;
 
 import hec.heclib.dss.*;
 import hec.heclib.util.*;
-import hec.hecmath.DSS;
 import hec.io.*;             // Has TimeSeriesContainer
 
 import java.util.prefs.*;
@@ -556,7 +555,7 @@ public class MainWindow extends javax.swing.JFrame {
         if ( ! prefDialog.cancel() )
         {
             // get the new strings from the dialog
-            stageDataStrings = prefDialog.getDataList();
+            stageDataStrings = prefDialog.getCParts();
             stageAreaStrings = prefDialog.getAreaList();
 
             prefs.put("Stage Data Strings",stageDataStrings);
@@ -994,10 +993,8 @@ public class MainWindow extends javax.swing.JFrame {
                 stopTime.increment(8,60);
             }
 
-            // set the path
             DSSFileManager.ts.setPathname(path);
 
-            // set the path
             DSSFileManager.ts.setTimeWindow(startTime,stopTime);
 
             if ( recordDaily && yearIndex == 0 )
@@ -1080,71 +1077,59 @@ public class MainWindow extends javax.swing.JFrame {
 
     private void getYearAverages()
     {
+        int rv;
         doubleArrayContainer vals = new doubleArrayContainer();
 
-        if ( recordDaily == false )
+        if (recordDaily == false)
         {
-
-            int rv = ts.read(vals);
-
-            if ( rv == - 1)
-            {
-                rAvg = HecDouble.NO_VALUE_SET;
-                fAvg = HecDouble.NO_VALUE_SET;
-                stageAvg = HecDouble.NO_VALUE_SET;
-                return;
-            }
-            else if ( rv == -2 )
-            {
-                rAvg = -1;
-                fAvg = -1;
-                return;
-            }
-            else if ( rv == -3 )
-            {
-                rAvg = -1;
-                fAvg = -1;
-                return;
-            }
-
-            // get the rearing acres
-            fAvg = getYearFeedingAverage(vals, false);
-
-            //get the spawning acres
-            rAvg = getYearRestingAverage(vals, false);
-
-            stageAvg = getYearStageAverage(vals, false);
-        }
-        else
+            rv = DSSFileManager.ts.read(vals);
+        } else
         {
             dailyTime = new HecTimeArray();
+            rv = DSSFileManager.ts.read(dailyTime, vals);
+        }
 
-            int rv = DSSFileManager.ts.read(dailyTime,vals);
+        if( rv < 0) {
+            InitializeErrorValues(rv);
+            return;
+        }
 
+        if (recordDaily)
+        {
             updateDailyArrays();
+        }
 
-            if ( rv == -2 )
-            {
-                rAvg = -1;
-                fAvg = -1;
-                tAvg = -1;
-            }
-            else if ( rv == -3 )
-            {
-                rAvg = -1;
-                fAvg = -1;
-                tAvg = -1;
-            }
+        // get the rearing acres
+        fAvg = getYearFeedingAverage(vals, recordDaily);
+        //get the spawning acres
+        rAvg = getYearRestingAverage(vals, recordDaily);
 
-            // get the rearing acres
-            fAvg = getYearFeedingAverage(vals, true);
+        stageAvg = getYearStageAverage(vals, recordDaily);
 
-            //get the spawning acres
-            rAvg = getYearRestingAverage(vals, true);
-
-            stageAvg = getYearStageAverage(vals, true);
-
+        if (recordDaily)
+        {
             bufferYearData();
+        }
+    }
+
+    private void InitializeErrorValues(int rv) {
+
+        if ( rv == - 1) {
+            rAvg = HecDouble.NO_VALUE_SET;
+            fAvg = HecDouble.NO_VALUE_SET;
+            stageAvg = HecDouble.NO_VALUE_SET;
+        }
+        if ( rv == -2 )
+        {
+            rAvg = -1;
+            fAvg = -1;
+            tAvg = -1;
+        }
+        else if ( rv == -3 )
+        {
+            rAvg = -1;
+            fAvg = -1;
+            tAvg = -1;
         }
     }
 
@@ -1774,8 +1759,8 @@ public class MainWindow extends javax.swing.JFrame {
     //User Variables
     private java.io.File lastFile;
     private boolean fileLoaded;
-    private HecTimeSeries ts;
-    private HecPairedData pd;
+    //private HecTimeSeries ts;
+    //private HecPairedData pd;
     private PairedDataContainer stageAreaCurve;
     private String currentPath;
     private intArrayContainer years;
