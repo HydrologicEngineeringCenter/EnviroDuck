@@ -1009,6 +1009,8 @@ public class MainWindow extends javax.swing.JFrame {
         stageAreaCurve = new PairedDataContainer();
         int rv = pd.read(stageAreaCurve);
 
+        calculator = new AreaCalculator(stageAreaCurve.xOrdinates, stageAreaCurve.yOrdinates[0]);
+
         if ( rv == -2)
         {
             javax.swing.JOptionPane.showMessageDialog(this,
@@ -1102,33 +1104,6 @@ public class MainWindow extends javax.swing.JFrame {
         return path;
     }
 
-
-    private double LinearInterpolate(PairedDataContainer stageAreaCurve, double num)
-    {
-        double[] xvals = stageAreaCurve.xOrdinates;
-
-        if (xvals.length == 0 || num < xvals[0] || num > xvals[xvals.length - 1])
-        {
-            return -1;
-        }
-        double[] yvals = stageAreaCurve.yOrdinates[0];
-
-        for (int i = 0; i < stageAreaCurve.xOrdinates.length-1; i++)
-        {
-            double x1 = xvals[i];
-            double x2 = xvals[i+1];
-            double y1 = yvals[i];
-            double y2 = yvals[i+1];
-
-            if (num >= x1 && num <= x2)
-            {
-                double slope = (y2 - y1) / (x2 - x1);
-                double rval = y1+(num - x1)*slope;
-                return rval;
-            }
-        }
-        return -2;
-    }
     /** makeAreaTable
      *  Use the stage area table to construct an area incrment map.
      *  This will hold the number of new accres flooded in 1/10 of a foot
@@ -1139,20 +1114,9 @@ public class MainWindow extends javax.swing.JFrame {
     {
         areaTable = new java.util.HashMap<Double,TableRec>((int)((stageAreaCurve.xOrdinates.length*10+1)/0.75),0.75f);
 
-        int l = stageAreaCurve.xOrdinates.length;
-
-        double min_val = Math.floor(stageAreaCurve.xOrdinates[0]);
-        double max_val = Math.ceil(stageAreaCurve.xOrdinates[l-1]);
-
-        java.util.HashMap<Double,TableRec> tempAreaTable = new java.util.HashMap<Double,TableRec>((int)((stageAreaCurve.xOrdinates.length*10+1)/0.75),0.75f);
-        for (double x = Math.round(min_val * 10) / 10.0; x < max_val; x = Math.round((x + 0.1) * 10) / 10.0)
+        for (int i = 0; i < calculator.incrementalStage.size(); i++)
         {
-            //double NextVal = Math.round((x + 0.1) * 10.0) / 10.0;
-            double area2 = LinearInterpolate(stageAreaCurve, x + 0.1);
-            double area1 =  LinearInterpolate(stageAreaCurve, x);
-            double diff = area2 - area1;
-
-            areaTable.put(x, new TableRec(area2 - area1, 0));
+            areaTable.put(calculator.incrementalStage.get(i), new TableRec(calculator.incrementalArea.get(i), 0));
         }
     }
 
@@ -1779,6 +1743,7 @@ public class MainWindow extends javax.swing.JFrame {
             for( int j = 0; j < 10; ++j)
             {
                 double key = i + (j * 0.1);
+                System.out.println(key);
                 double val = (areaTable.get(key)).area;
 
                 dBuffer.append(key + "\t" + val + "\n");
@@ -1899,9 +1864,10 @@ public class MainWindow extends javax.swing.JFrame {
 
         public double area;
         public int count;
-    };
+    }
 
     private java.util.HashMap<Double,TableRec> areaTable;
+    private AreaCalculator calculator;
 
     javax.swing.text.NumberFormatter df;
     javax.swing.text.NumberFormatter df2;
