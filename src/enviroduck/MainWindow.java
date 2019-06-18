@@ -1108,7 +1108,7 @@ public class MainWindow extends javax.swing.JFrame {
 
         if (recordDaily)
         {
-            bufferYearData();
+            appendResultsToDailyReport();
         }
     }
 
@@ -1347,11 +1347,9 @@ public class MainWindow extends javax.swing.JFrame {
      *  The first exaustionDays days are not considered in the average.
      *  The daily stages are recorded */
 
-    private double getYearStageAverage(doubleArrayContainer vals, boolean dailyStageSet)
+    private double getYearStageAverageOld(doubleArrayContainer vals, boolean dailyStageSet)
     {
         double val, total = 0;
-
-        int num = vals.array.length - exaustionDays;
 
         if (dailyStageSet){
             for( int i = 0; i < exaustionDays; ++i )
@@ -1363,11 +1361,9 @@ public class MainWindow extends javax.swing.JFrame {
         if (dailyStageSet){
             for( int i = exaustionDays; i < vals.array.length; ++i)
             {
-                val = vals.array[i];
+                dailyStage.set(i,vals.array[i]);
 
-                dailyStage.set(i,val);
-
-                total += val;
+                total += vals.array[i];
             }
         } else {
             for( int i = exaustionDays; i < vals.array.length; ++i)
@@ -1377,6 +1373,25 @@ public class MainWindow extends javax.swing.JFrame {
         }
 
 
+        return total / vals.array.length;
+    }
+
+    private double getYearStageAverage(doubleArrayContainer vals, boolean dailyStageSet)
+    {
+        double total = 0;
+
+        for( int i = 0; i < vals.array.length; ++i )
+        {
+            if (dailyStageSet)
+            {
+                dailyStage.set(i,vals.array[i]);
+            }
+
+            if (i >= exaustionDays)
+            {
+                total += vals.array[i];
+            }
+        }
         return total / vals.array.length;
     }
 
@@ -1618,15 +1633,15 @@ public class MainWindow extends javax.swing.JFrame {
         dBuffer.append("Max Rearing Depth: " + maxDepth + " Feet\n");
         dBuffer.append("\n\n");
 
-        dBuffer.append("Year\tStage\tFeeding\tResting\tExaustion Stage\n");
+        dBuffer.append("Year\tStage (ft)\tFeeding (cal)\tResting (hrs)\tExaustion Stage\n");
     }
 
-    /** void bufferYearData()
+    /** void appendResultsToDailyReport()
      *
      * This function saves the dailly values for the current year to a buffer
      * the buffer is diplayed with displayDailyResults */
 
-    private void bufferYearData()
+    private void appendResultsToDailyReport()
     {
 
         for(int i = 0; i < dailyTime.getIntArray().length; ++i )
