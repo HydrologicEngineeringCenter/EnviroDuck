@@ -11,6 +11,7 @@ package enviroduck;
 
 import hec.heclib.dss.*;
 import hec.heclib.util.*;
+import hec.hecmath.DSS;
 import hec.io.*;             // Has TimeSeriesContainer
 
 import java.util.prefs.*;
@@ -37,7 +38,7 @@ public class MainWindow extends javax.swing.JFrame {
 
     public void finalize() throws Throwable
     {
-        closeDSSFile();
+        DSSFileManager.closeDSSFile();
 
         super.finalize();
     }
@@ -91,7 +92,10 @@ public class MainWindow extends javax.swing.JFrame {
         // force the stage area stings to update
         if (fileLoaded)
         {
-            loadDSSFile();
+            DSSFileManager = new DSSFile(lastFile, stageDataStr, jStageTable, stagePathsModel);
+            DSSFileManager.loadDSSFile();
+            DSSFileManager.CreateStageDataStrings();
+            //loadDSSFile();
         }
     }
 
@@ -535,25 +539,25 @@ public class MainWindow extends javax.swing.JFrame {
      * area curves are checked. If the control strings have changed update the display */
 
     private void jPrefsItemsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jPrefsItemsActionPerformed
-        PrefDialog pd = new PrefDialog(this,true);
+        PrefDialog prefDialog = new PrefDialog(this,true);
 
         // set the strings displayed by the dialog
-        pd.setDataList(stageDataStrings);
-        pd.setAreaList(stageAreaStrings);
+        prefDialog.setDataList(stageDataStrings);
+        prefDialog.setAreaList(stageAreaStrings);
 
         // make a copy of the current strings
         String s1 = new String(stageDataStrings);
         String s2 = new String(stageAreaStrings);
 
         // show the dialog
-        pd.setVisible(true);
+        prefDialog.setVisible(true);
 
         // if the user did not cancel
-        if ( ! pd.cancel() )
+        if ( ! prefDialog.cancel() )
         {
             // get the new strings from the dialog
-            stageDataStrings = pd.getDataList();
-            stageAreaStrings = pd.getAreaList();
+            stageDataStrings = prefDialog.getDataList();
+            stageAreaStrings = prefDialog.getAreaList();
 
             prefs.put("Stage Data Strings",stageDataStrings);
             prefs.put("Stage Area Strings",stageAreaStrings);
@@ -562,7 +566,8 @@ public class MainWindow extends javax.swing.JFrame {
         // if the data selection strings changed reload the DSS File
         if ( s1.equals(stageDataStrings) == false )
         {
-            loadDSSFile();
+            DSSFileManager.loadDSSFile();
+            //loadDSSFile();
         }
         else
         {
@@ -787,7 +792,7 @@ public class MainWindow extends javax.swing.JFrame {
             for(int k = 0; k < stageAreaStr.length; ++k)
             {
                 // search the Catalog for matches
-                CondensedReference[] cr = pd.getCondensedCatalog("/*/"+stagePathsModel.getValueAt(idx,1)+"/"+stageAreaStr[k]+"/*/*/*/");
+                CondensedReference[] cr = DSSFileManager.pd.getCondensedCatalog("/*/"+stagePathsModel.getValueAt(idx,1)+"/"+stageAreaStr[k]+"/*/*/*/");
 
                 // display each stage area curve on a row
                 for(int j = 0; j < cr.length; ++j)
@@ -827,7 +832,7 @@ public class MainWindow extends javax.swing.JFrame {
         {
             // retrieve the stage area path from the selected row
             int selectedRow = lsm.getMinSelectionIndex();
-            pd.setPathname(  "/" + (String) areaPathsModel.getValueAt(selectedRow, 0) +
+            DSSFileManager.pd.setPathname(  "/" + (String) areaPathsModel.getValueAt(selectedRow, 0) +
                     "/" + (String) areaPathsModel.getValueAt(selectedRow, 1) +
                     "/" + (String) areaPathsModel.getValueAt(selectedRow, 2) +
                     "/" + (String) areaPathsModel.getValueAt(selectedRow, 3) +
@@ -907,7 +912,10 @@ public class MainWindow extends javax.swing.JFrame {
                 jDSSFilename.setText( lastFile.getAbsolutePath());
 
                 prefs.put("Last DSS File Opened",lastFile.getAbsolutePath()); // record the last file opened so we can brose to its directory at the next request
-                loadDSSFile();
+                DSSFileManager = new DSSFile(lastFile, stageDataStr, jStageTable, stagePathsModel);
+                DSSFileManager.loadDSSFile();
+                DSSFileManager.CreateStageDataStrings();
+                //loadDSSFile();
             }
             else
             {
@@ -923,77 +931,6 @@ public class MainWindow extends javax.swing.JFrame {
     }//GEN-LAST:event_actionPerformed
 
     /**
-     * load the user selected DSS file 
-     */
-
-    public void loadDSSFile()
-    {
-        // close the old time series if one exists
-        closeDSSFile();
-
-        // make a new time series
-        ts = new HecTimeSeries();
-        pd = new HecPairedData();
-
-        // open the interfaces to the dss file
-        ts.setDSSFileName(lastFile.getAbsolutePath(),true);
-        pd.setDSSFileName(lastFile.getAbsolutePath(),true);
-
-
-        for (int j = 0; j < stageDataStr.length; ++j) {
-
-            CondensedReference[] cr = ts.getCondensedCatalog("/*/*/"+stageDataStr[j]+"/*/*/*/");
-
-            for (int i = 0; i < cr.length; i++) {
-                CondensedReference r = cr[i];
-                stagePathsModel.addRow(r.toString().substring(1).split("/"));
-            }
-        }
-
-        jStageTable.clearSelection();
-
-        if ( jStageTable.getRowCount() > 0)
-        {
-            jStageTable.addRowSelectionInterval(0,0);
-        }
-    }
-
-    /**
-     * Close the the file pointed to by the Timeseries Refernce and set it yo null
-     */
-
-    private void closeDSSFile()
-    {
-        if ( ts != null )
-        {
-            // tell the dss library that io with this file is done
-            ts.done();
-
-            //c lose the file
-            ts.close();
-
-            // remove the reference
-            ts = null;
-        }
-
-        if ( pd != null )
-        {
-            // tell the dss library that io with this file is done
-            pd.done();
-
-            //c lose the file
-            pd.close();
-
-            // remove the reference
-            pd = null;
-        }
-
-        // clear the path display list
-        stagePathsModel.setRowCount(0);
-    }
-
-
-    /**
      * run model on the time period indicated in the text boxes
      **/
 
@@ -1007,7 +944,7 @@ public class MainWindow extends javax.swing.JFrame {
         //read the stage area curve
         int size = stopYear-startYear+1;
         stageAreaCurve = new PairedDataContainer();
-        int rv = pd.read(stageAreaCurve);
+        int rv = DSSFileManager.pd.read(stageAreaCurve);
 
         calculator = new AreaCalculator(stageAreaCurve.xOrdinates, stageAreaCurve.yOrdinates[0]);
 
@@ -1058,10 +995,10 @@ public class MainWindow extends javax.swing.JFrame {
             }
 
             // set the path
-            ts.setPathname(path);
+            DSSFileManager.ts.setPathname(path);
 
             // set the path
-            ts.setTimeWindow(startTime,stopTime);
+            DSSFileManager.ts.setTimeWindow(startTime,stopTime);
 
             if ( recordDaily && yearIndex == 0 )
             {
@@ -1182,7 +1119,7 @@ public class MainWindow extends javax.swing.JFrame {
         {
             dailyTime = new HecTimeArray();
 
-            int rv = ts.read(dailyTime,vals);
+            int rv = DSSFileManager.ts.read(dailyTime,vals);
 
             updateDailyArrays();
 
@@ -1558,15 +1495,15 @@ public class MainWindow extends javax.swing.JFrame {
         StringBuffer buffer = new StringBuffer();
 
         buffer.append("DSS File:\t");
-        buffer.append(ts.DSSFileName());
+        buffer.append(DSSFileManager.ts.DSSFileName());
         buffer.append("\n");
 
         buffer.append("Stage Elevatopn Path:\t");
-        buffer.append(ts.pathname());
+        buffer.append(DSSFileManager.ts.pathname());
         buffer.append("\n");
 
         buffer.append("Stage Area Path:\t");
-        buffer.append(pd.pathname());
+        buffer.append(DSSFileManager.pd.pathname());
         buffer.append("\n");
 
         buffer.append("Time Window:\t");
@@ -1606,7 +1543,7 @@ public class MainWindow extends javax.swing.JFrame {
         buffer.append(yearRestingArea.average().string(1,true));
         buffer.append("\n");
 
-        String fileName =  ts.aPart() + "_" + ts.bPart() + "_" + ts.fPart();
+        String fileName =  DSSFileManager.ts.aPart() + "_" + DSSFileManager.ts.bPart() + "_" + DSSFileManager.ts.fPart();
         fileName += ".evd";
         String filePath = outputDirPath + "/" + fileName;
         try
@@ -1679,15 +1616,15 @@ public class MainWindow extends javax.swing.JFrame {
     {
         dBuffer = new StringBuffer();
         dBuffer.append("DSS File:\t");
-        dBuffer.append(ts.DSSFileName());
+        dBuffer.append(DSSFileManager.ts.DSSFileName());
         dBuffer.append("\n");
 
         dBuffer.append("Stage Elevatopn Path:\t");
-        dBuffer.append(ts.pathname());
+        dBuffer.append(DSSFileManager.ts.pathname());
         dBuffer.append("\n");
 
         dBuffer.append("Stage Area Path:\t");
-        dBuffer.append(pd.pathname());
+        dBuffer.append(DSSFileManager.pd.pathname());
         dBuffer.append("\n");
 
         dBuffer.append("Time Window:\t");
@@ -1743,7 +1680,6 @@ public class MainWindow extends javax.swing.JFrame {
             for( int j = 0; j < 10; ++j)
             {
                 double key = i + (j * 0.1);
-                System.out.println(key);
                 double val = (areaTable.get(key)).area;
 
                 dBuffer.append(key + "\t" + val + "\n");
@@ -1868,6 +1804,7 @@ public class MainWindow extends javax.swing.JFrame {
 
     private java.util.HashMap<Double,TableRec> areaTable;
     private AreaCalculator calculator;
+    private DSSFile DSSFileManager;
 
     javax.swing.text.NumberFormatter df;
     javax.swing.text.NumberFormatter df2;
