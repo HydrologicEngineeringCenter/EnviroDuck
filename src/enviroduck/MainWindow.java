@@ -6,7 +6,6 @@
 package enviroduck;
 
 /**
- *
  * @author  b4edhdwj
  */
 
@@ -18,84 +17,87 @@ import java.util.prefs.*;
 
 
 /** class MainWindow
- * 
+ *
  * This class provides the main GUI for the EnviroDuck Program */
 
 public class MainWindow extends javax.swing.JFrame {
-    
+
     /** MainWindow()
-     * 
+     *
      * Creates new form MainWindow */
-    
+
     public MainWindow() {
         init();
         initComponents();
     }
-    
+
     /** void finalize()
-     * 
+     *
      * cleanup the MainWindow on program exit */
-    
+
     public void finalize() throws Throwable
     {
-        closeDSSFile();
-        
+        DSSFileManager.closeDSSFile();
+
         super.finalize();
     }
-    
+
     /** void init()
      *
      * INitalize the no GUI variables of the MainWindow class */
-    
+
     private void init()
     {
         lastFile = null;
         fileLoaded = false;
-        
+
         prefs = Preferences.userNodeForPackage(MainWindow.class);
-        
+
         // Get the Stage data prefernece strings
         stageDataStrings = prefs.get("Stage Data Strings","ELEV");
-        
+
         // Get the Stage Area preference strings
         stageAreaStrings = prefs.get("Stage Area Strings","ELEV-AREA");
- 
+
         // Get the last file opened   
         String tmp = prefs.get("Last DSS File Opened","");
         if ( tmp.equals("") == false)
         {
             lastFile = new java.io.File(tmp);
         }
-        
+
         // Get the ouput directory
         outputDirPath = prefs.get("Output Directory","");
-        
+
         // the spawning depth range
         maxDepth = prefs.getFloat("Max Depth",1.5f);
-   
+
         // Get the season info
         seasonStartMonth = prefs.getInt("Season Start Month",11);
-        seasonStopMonth = prefs.getInt("Season Stop Month",2);     
+        seasonStopMonth = prefs.getInt("Season Stop Month",2);
         seasonStartDay = prefs.getInt("Season Start Day",1);
         seasonStopDay = prefs.getInt("Season Stop Day",29);
-      
+
         // Get the days to exaustion
-        exaustionDays = prefs.getInt("Exaustion Days",30);
-        
+        exhaustionDays = prefs.getInt("Exaustion Days",30);
+
         // Get the depletion Days
         depletionDays = prefs.getInt("DepletionDays",120);
-        
+
         //Get Debug Conditions
-        recordDaily = prefs.getBoolean("Record Daily",false); 
+        recordDaily = prefs.getBoolean("Record Daily",false);
         stageDataStr = stageDataStrings.split(":");
-        
+
         // force the stage area stings to update
         if (fileLoaded)
         {
-            loadDSSFile();
+            DSSFileManager = new DSSFile(lastFile, stageDataStr, jStageTable, stagePathsModel);
+            DSSFileManager.loadDSSFile();
+            DSSFileManager.CreateStageDataStrings();
+            //loadDSSFile();
         }
     }
-    
+
     void resetPrefs()
     {
         // set the variables
@@ -108,7 +110,7 @@ public class MainWindow extends javax.swing.JFrame {
         seasonStartDay = 1;
         seasonStopDay = 29;
         recordDaily = false;
-        
+
         // set the preferences
         prefs.put("Stage Data Strings",stageDataStrings);
         prefs.get("Stage Area Strings",stageAreaStrings);
@@ -118,21 +120,21 @@ public class MainWindow extends javax.swing.JFrame {
         prefs.putInt("Season Start Day",seasonStartDay);
         prefs.putInt("Season Stop Day",seasonStopDay);
         prefs.putBoolean("Record Daily",recordDaily);
-        
+
         //spawning Depth
         jMaxDepthText.setValue(maxDepth);
-        
+
         //season duration
         jSeasonField.setText("" + seasonStartMonth + "/" + seasonStartDay + " - "
-                        + seasonStopMonth +  "/" + seasonStopDay);
-        
+                + seasonStopMonth +  "/" + seasonStopDay);
+
         //boolean flags
         jCalcDailyCBox.setSelected(recordDaily);
-        
-        
-        
+
+
+
     }
-    
+
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
@@ -178,7 +180,7 @@ public class MainWindow extends javax.swing.JFrame {
         jButton1 = new javax.swing.JButton();
         jSeasonField = new javax.swing.JTextField();
         jSeasonField.setText("" + seasonStartMonth + "/" + seasonStartDay + " - "
-            + seasonStopMonth +  "/" + seasonStopDay);
+                + seasonStopMonth +  "/" + seasonStopDay);
         jLabel4 = new javax.swing.JLabel();
         jScrollPane2 = new javax.swing.JScrollPane();
         jAreaTable = new javax.swing.JTable();
@@ -221,15 +223,15 @@ public class MainWindow extends javax.swing.JFrame {
         jDSSFilename.setBounds(90, 10, 430, 19);
 
         jStageTable.setModel(new javax.swing.table.DefaultTableModel(
-            new Object [][] {
+                new Object [][] {
 
-            },
-            new String [] {
-                "A Part", "B Part", "C Part", "D Part", "E Part", "F Part"
-            }
+                },
+                new String [] {
+                        "A Part", "B Part", "C Part", "D Part", "E Part", "F Part"
+                }
         ) {
             boolean[] canEdit = new boolean [] {
-                false, false, false, false, false, false
+                    false, false, false, false, false, false
             };
 
             public boolean isCellEditable(int rowIndex, int columnIndex) {
@@ -331,15 +333,15 @@ public class MainWindow extends javax.swing.JFrame {
         jPanel1.setBounds(300, 410, 210, 80);
 
         jAreaTable.setModel(new javax.swing.table.DefaultTableModel(
-            new Object [][] {
+                new Object [][] {
 
-            },
-            new String [] {
-                "A Part", "B Part", "C Part", "D Part", "E Part", "F Part"
-            }
+                },
+                new String [] {
+                        "A Part", "B Part", "C Part", "D Part", "E Part", "F Part"
+                }
         ) {
             boolean[] canEdit = new boolean [] {
-                false, false, false, false, false, false
+                    false, false, false, false, false, false
             };
 
             public boolean isCellEditable(int rowIndex, int columnIndex) {
@@ -425,7 +427,7 @@ public class MainWindow extends javax.swing.JFrame {
         jMaxDepthText.setBounds(210, 20, 30, 21);
 
         jDurField.setToolTipText("");
-        jDurField.setValue(exaustionDays);
+        jDurField.setValue(exhaustionDays);
         jDurField.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jDurFieldActionPerformed(evt);
@@ -483,33 +485,33 @@ public class MainWindow extends javax.swing.JFrame {
     }//GEN-END:initComponents
 
     private void jOutputPathFieldActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jOutputPathFieldActionPerformed
-            outputDirPath = jOutputPathField.getText();              
-            prefs.put("Output Directory",outputDirPath);
+        outputDirPath = jOutputPathField.getText();
+        prefs.put("Output Directory",outputDirPath);
     }//GEN-LAST:event_jOutputPathFieldActionPerformed
 
     /** jCalcDailyCBoxActionPerformed(java.awt.event.ActionEvent evt)
      *
      * This function is called by the "calc daily" check box it determins if
      * daily data is recorded */
-    
+
     private void jCalcDailyCBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jCalcDailyCBoxActionPerformed
-       recordDaily = jCalcDailyCBox.getModel().isSelected();
-       prefs.putBoolean("Record Daily",recordDaily);
+        recordDaily = jCalcDailyCBox.getModel().isSelected();
+        prefs.putBoolean("Record Daily",recordDaily);
     }//GEN-LAST:event_jCalcDailyCBoxActionPerformed
 
     /** jOutputPathButtonActionPerformed(java.awt.event.ActionEvent evt)
      *
      *  This method is called by the browse button beside the output path display field.
      *  It displays a file browser for the user to choose an output directory */
-    
+
     private void jOutputPathButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jOutputPathButtonActionPerformed
-       
+
         javax.swing.JFileChooser  fc;
-        
+
         fc = new javax.swing.JFileChooser ();               // make the file chooser
         fc.setFileSelectionMode(fc.DIRECTORIES_ONLY);       // display files only
-            fc.setCurrentDirectory( new java.io.File(outputDirPath) );                  // open the last directory
- 
+        fc.setCurrentDirectory( new java.io.File(outputDirPath) );                  // open the last directory
+
         int rval;
         rval = fc.showOpenDialog(this);       // show the dialog
         if ( rval == fc.CANCEL_OPTION )
@@ -517,10 +519,10 @@ public class MainWindow extends javax.swing.JFrame {
             return;
         }
         else if ( rval == fc.APPROVE_OPTION)
-        {       
+        {
             outputDirPath = fc.getSelectedFile().getAbsolutePath();
             jOutputPathField.setText( outputDirPath);
-                
+
             prefs.put("Output Directory",outputDirPath);
         }
         else
@@ -534,40 +536,41 @@ public class MainWindow extends javax.swing.JFrame {
      * This methode is called by the Preferences menu item. It displays the prefernces dialog
      * After the Prefrences dialog is closed the control stringx for find gage data and stage
      * area curves are checked. If the control strings have changed update the display */
-    
+
     private void jPrefsItemsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jPrefsItemsActionPerformed
-        PrefDialog pd = new PrefDialog(this,true);
-        
+        PrefDialog prefDialog = new PrefDialog(this,true);
+
         // set the strings displayed by the dialog
-        pd.setDataList(stageDataStrings);
-        pd.setAreaList(stageAreaStrings);
-        
+        prefDialog.setDataList(stageDataStrings);
+        prefDialog.setAreaList(stageAreaStrings);
+
         // make a copy of the current strings
         String s1 = new String(stageDataStrings);
-        String s2 = new String(stageAreaStrings); 
-        
+        String s2 = new String(stageAreaStrings);
+
         // show the dialog
-        pd.setVisible(true);
-        
+        prefDialog.setVisible(true);
+
         // if the user did not cancel
-        if ( ! pd.cancel() )
+        if ( ! prefDialog.cancel() )
         {
             // get the new strings from the dialog
-            stageDataStrings = pd.getDataList();
-            stageAreaStrings = pd.getAreaList();
-            
+            stageDataStrings = prefDialog.getCParts();
+            stageAreaStrings = prefDialog.getAreaList();
+
             prefs.put("Stage Data Strings",stageDataStrings);
             prefs.put("Stage Area Strings",stageAreaStrings);
         }
-        
+
         // if the data selection strings changed reload the DSS File
         if ( s1.equals(stageDataStrings) == false )
         {
-            loadDSSFile();
+            DSSFileManager.loadDSSFile();
+            //loadDSSFile();
         }
         else
         {
-            
+
             // force the stage area stings to update if nessessary
             if ( s2.equals(stageAreaStrings) == false )
             {
@@ -579,8 +582,8 @@ public class MainWindow extends javax.swing.JFrame {
                 }
             }
         }
-        
-        
+
+
     }//GEN-LAST:event_jPrefsItemsActionPerformed
 
     /** void jMaxDepthTextActionPerformed(java.awt.event.ActionEvent evt)
@@ -588,14 +591,14 @@ public class MainWindow extends javax.swing.JFrame {
      * This methode is called by the "Max Depth" display field. It makes 
      * the internal variable holding the maximum depth for the model trake the
      * value displayed in the field */
-    
+
     private void jMaxDepthTextActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMaxDepthTextActionPerformed
         if (jMaxDepthText.getValue() instanceof Integer)
         {
             Integer i = (Integer) jMaxDepthText.getValue();
             maxDepth = i.intValue();
-        } 
-        
+        }
+
         prefs.putFloat("Max Depth",maxDepth);
     }//GEN-LAST:event_jMaxDepthTextActionPerformed
 
@@ -623,60 +626,60 @@ public class MainWindow extends javax.swing.JFrame {
         if (jDurField.getValue() instanceof Integer)
         {
             Integer i = (Integer) jDurField.getValue();
-            exaustionDays = i.intValue();
+            exhaustionDays = i.intValue();
         }
-        
-        prefs.putInt("Exaustion Days",exaustionDays);
+
+        prefs.putInt("Exaustion Days", exhaustionDays);
     }//GEN-LAST:event_jDurFieldActionPerformed
 
     /** This opens a dialog box alowing a new time window to be selected */
-    
+
     private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
         // make the dialog
         DateDialog dd = new DateDialog(this,true);
-        
+
         java.awt.Rectangle windowBounds;
         java.awt.Rectangle dialogBounds;
         windowBounds = getBounds();
         dialogBounds = dd.getBounds();
-        
+
         dialogBounds.x = (int)(windowBounds.getCenterX() - (dialogBounds.getWidth() / 2));
         dialogBounds.y = (int)(windowBounds.getCenterY() - (dialogBounds.getHeight() / 2));
         dd.setBounds(dialogBounds);
-        
+
         // set the displayed dates
         dd.setInitalMonth(seasonStartMonth);
         dd.setInitalDay(seasonStartDay);
         dd.setFinalMonth(seasonStopMonth);
         dd.setFinalDay(seasonStopDay);
-        
+
         // show the dialog
         dd.setVisible(true);
-        
+
         //get the new dates
         seasonStartMonth = dd.getInitalMonth();
         seasonStartDay = dd.getInitalDay();
         seasonStopMonth = dd.getFinalMonth();
         seasonStopDay = dd.getFinalDay();
-        
+
         //write the new values to the preferences
         prefs.putInt("Season Start Month",seasonStartMonth);
         prefs.putInt("Season Start Day",seasonStartDay);
         prefs.putInt("Season Stop Month",seasonStopMonth);
         prefs.putInt("Season Stop Day",seasonStopDay);
-        
+
         jSeasonField.setText("" + seasonStartMonth + "/" + seasonStartDay + " - "
-            + seasonStopMonth +  "/" + seasonStopDay);
-        
+                + seasonStopMonth +  "/" + seasonStopDay);
+
     }//GEN-LAST:event_jButton1ActionPerformed
 
     /** void jRunButtonActionPerformed(java.awt.event.ActionEvent evt)
      *
      * This methode is called by the run button. It sincs the internalo variables
      * with the GUI and calls runRange() */
-    
+
     private void jRunButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jRunButtonActionPerformed
-  
+
         //force update of max depth
         try
         {
@@ -684,17 +687,17 @@ public class MainWindow extends javax.swing.JFrame {
         }
         catch( java.text.ParseException e )
         {
-            
+
         }
-        
+
         if (jMaxDepthText.getValue() instanceof Integer)
         {
             Integer i = (Integer) jMaxDepthText.getValue();
             maxDepth = i.intValue();
-        }       
-        
-        prefs.putFloat("Max Depth",maxDepth);        
-        
+        }
+
+        prefs.putFloat("Max Depth",maxDepth);
+
         //force update of Duration
         try
         {
@@ -702,48 +705,48 @@ public class MainWindow extends javax.swing.JFrame {
         }
         catch( java.text.ParseException e)
         {
-            
+
         }
-        
+
         // force update of duration field
         if (jDurField.getValue() instanceof Integer)
         {
             Integer i = (Integer) jDurField.getValue();
-            exaustionDays = i.intValue();
-        } 
-        prefs.putInt("Exaustion Days",exaustionDays);   
-        
+            exhaustionDays = i.intValue();
+        }
+        prefs.putInt("Exaustion Days", exhaustionDays);
+
         int firstYear = Integer.parseInt(jStartText.getText());
         int lastYear = Integer.parseInt(jStopText.getText());
-        
+
         runRange(firstYear,lastYear,getWindowBeginStr(),getWindowEndStr());
-        
+
     }//GEN-LAST:event_jRunButtonActionPerformed
-    
+
     /** void jStageTableValueChanged(javax.swing.event.ListSelectionEvent e)
      *
      * This methode is called in response to table events in the gage table (upper table)
      */
-    
+
     void jStageTableValueChanged(javax.swing.event.ListSelectionEvent e)
     {
         //Ignore extra messages.
         if (e.getValueIsAdjusting()) return;
 
         javax.swing.ListSelectionModel lsm =
-            (javax.swing.ListSelectionModel)e.getSource();
-        if (lsm.isSelectionEmpty()) 
+                (javax.swing.ListSelectionModel)e.getSource();
+        if (lsm.isSelectionEmpty())
         {
-           //no rows are selected
-        } 
+            //no rows are selected
+        }
         else
         {
             // get the selected indes
             int idx = jStageTable.getSelectionModel().getMinSelectionIndex();
-        
+
             // get the current path parts
-            String[] dRange = ((String) stagePathsModel.getValueAt(idx,3)).split(" - ");   
-        
+            String[] dRange = ((String) stagePathsModel.getValueAt(idx,3)).split(" - ");
+
             //construct the inital path
             StringBuffer path = new StringBuffer();
             path.append("/");
@@ -757,45 +760,45 @@ public class MainWindow extends javax.swing.JFrame {
             path.append("/");
             path.append(stagePathsModel.getValueAt(idx,4));
             path.append("/");
-            path.append(stagePathsModel.getValueAt(idx,5));      
-        
+            path.append(stagePathsModel.getValueAt(idx,5));
+
             //set the path in the dss file
             currentPath = (path.toString());
-        
+
             if ( ! jRetainPeriodCBox.isSelected() )
             {
                 //set the window to incompass all data initally
-        
+
                 jStartText.setText(dRange[0].substring(5));
                 float val = Float.parseFloat(dRange[1].substring(5));
                 val -= 1;
                 jStopText.setText(Float.toString(val));
             }
-            
+
             // clear the stage area curve table
             areaPathsModel.setRowCount(0);
-            
+
             String buffer;
             String[] parts;
             java.util.Vector paths = new java.util.Vector();
-            
+
             // split the stage area string on ":"
             stageAreaStr = stageAreaStrings.split(":");
-            
+
             // find all possible stage area curves by matching B part to the current data path and C part against
             // the strings in parts
-            
+
             for(int k = 0; k < stageAreaStr.length; ++k)
             {
                 // search the Catalog for matches
-            	CondensedReference[] cr = pd.getCondensedCatalog("/*/"+stagePathsModel.getValueAt(idx,1)+"/"+stageAreaStr[k]+"/*/*/*/");
-                
+                CondensedReference[] cr = DSSFileManager.pd.getCondensedCatalog("/*/"+stagePathsModel.getValueAt(idx,1)+"/"+stageAreaStr[k]+"/*/*/*/");
+
                 // display each stage area curve on a row
                 for(int j = 0; j < cr.length; ++j)
                 {
                     areaPathsModel.addRow(cr[j].toString().substring(1).split("/"));
                 }
-        
+
                 // if any stageArea Paths where found reset the selection to the first path
                 if (areaPathsModel.getRowCount() > 0 )
                 {
@@ -803,67 +806,67 @@ public class MainWindow extends javax.swing.JFrame {
                     jAreaTable.addRowSelectionInterval(0,0);
                 }
             }
-        
-        
+
+
             jRunButton.setEnabled(true);
         }
     }
- 
+
     /** void jAreaTableValueChanged(javax.swing.event.ListSelectionEvent e)
      *
      * This methode is called in response to table events in the stage area table (lower table)
-     */    
-    
+     */
+
     private void jAreaTableValueChanged(javax.swing.event.ListSelectionEvent e)
     {
         //Ignore extra messages.
         if (e.getValueIsAdjusting()) return;
 
         javax.swing.ListSelectionModel lsm =
-            (javax.swing.ListSelectionModel)e.getSource();
-        if (lsm.isSelectionEmpty()) 
+                (javax.swing.ListSelectionModel)e.getSource();
+        if (lsm.isSelectionEmpty())
         {
-           //no rows are selected
-        } else 
+            //no rows are selected
+        } else
         {
             // retrieve the stage area path from the selected row
             int selectedRow = lsm.getMinSelectionIndex();
-            pd.setPathname(  "/" + (String) areaPathsModel.getValueAt(selectedRow, 0) +
-                             "/" + (String) areaPathsModel.getValueAt(selectedRow, 1) +
-                             "/" + (String) areaPathsModel.getValueAt(selectedRow, 2) + 
-                             "/" + (String) areaPathsModel.getValueAt(selectedRow, 3) + 
-                             "/" + (String) areaPathsModel.getValueAt(selectedRow, 4) + 
-                             "/" + (String) areaPathsModel.getValueAt(selectedRow, 5) + "/" );
-            
-        }      
+            DSSFileManager.pd.setPathname(  "/" + (String) areaPathsModel.getValueAt(selectedRow, 0) +
+                    "/" + (String) areaPathsModel.getValueAt(selectedRow, 1) +
+                    "/" + (String) areaPathsModel.getValueAt(selectedRow, 2) +
+                    "/" + (String) areaPathsModel.getValueAt(selectedRow, 3) +
+                    "/" + (String) areaPathsModel.getValueAt(selectedRow, 4) +
+                    "/" + (String) areaPathsModel.getValueAt(selectedRow, 5) + "/" );
+
+        }
     }
-    
+
     /** void actionPerformed(java.awt.event.ActionEvent evt)
      *
      * This methode is called form the Browse Button beside the dss file path display 
      * field or from the Open menu item. It opens a file browser for the user to select
      * a DSS File */
-    
+
     private void actionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_actionPerformed
-     
+
         javax.swing.JFileChooser  fc;
-        
+
         if ( evt.getSource() == jDssFileBrowseButton || evt.getSource() == jOpenMenuItem)
         {
             fc = new javax.swing.JFileChooser ();               // make the file chooser
             fc.setFileSelectionMode(fc.FILES_ONLY);             // display files only
             fc.setCurrentDirectory(lastFile);                   // open the last directory
             fc.setAcceptAllFileFilterUsed(false);               // do not display all files
-            
+
             // set the file filter to return only DSS files
-            
-            fc.setFileFilter(new javax.swing.filechooser.FileFilter(){ 
+
+            fc.setFileFilter(new javax.swing.filechooser.FileFilter(){
                 // return true only for files to be displayed
                 public boolean accept(java.io.File f)
                 {
                     // get the extension of the file
                     String ext = getExtension(f);
-                    
+
                     if ( f.isDirectory() )
                         return true;            // always show direcories
                     else if ( ext == null)
@@ -875,26 +878,26 @@ public class MainWindow extends javax.swing.JFrame {
                     else
                         return false;           // dont show any other files
                 }
-                
+
                 // The description of the file filter
-                public String getDescription()  
+                public String getDescription()
                 {
                     return new String("DSS File filter");
                 }
-                
+
                 // methode to get a filenames extension
                 private String getExtension(java.io.File f) {
-                String ext = null;
-                String s = f.getName();
-                int i = s.lastIndexOf('.');
+                    String ext = null;
+                    String s = f.getName();
+                    int i = s.lastIndexOf('.');
 
-                if (i > 0 &&  i < s.length() - 1) {
-                  ext = s.substring(i+1).toLowerCase();
+                    if (i > 0 &&  i < s.length() - 1) {
+                        ext = s.substring(i+1).toLowerCase();
+                    }
+                    return ext;
                 }
-                return ext;
-    }                
             });
-            
+
             int rval;                             // holder for retrun value
             rval = fc.showOpenDialog(this);       // show the dialog
             if ( rval == fc.CANCEL_OPTION )
@@ -902,744 +905,471 @@ public class MainWindow extends javax.swing.JFrame {
                 return;                           // if the user cancled do nothing
             }
             else if ( rval == fc.APPROVE_OPTION)
-            {       
+            {
                 lastFile = fc.getSelectedFile();    // set the last selected file
                 fileLoaded = true;                  // set the flag variabble saying a file is loaded
                 jDSSFilename.setText( lastFile.getAbsolutePath());
-                
+
                 prefs.put("Last DSS File Opened",lastFile.getAbsolutePath()); // record the last file opened so we can brose to its directory at the next request
-                loadDSSFile();
+                DSSFileManager = new DSSFile(lastFile, stageDataStr, jStageTable, stagePathsModel);
+                DSSFileManager.loadDSSFile();
+                DSSFileManager.CreateStageDataStrings();
+                //loadDSSFile();
             }
             else
             {
                 // some error occured 
-                
+
                 javax.swing.JOptionPane.showMessageDialog(this,
-                        "The File Chooser returned and unexpected value: " + rval, 
+                        "The File Chooser returned and unexpected value: " + rval,
                         "Bad Return Value", javax.swing.JOptionPane.ERROR_MESSAGE);
             }
 
-            
+
         }
     }//GEN-LAST:event_actionPerformed
-    
-    /**
-     * load the user selected DSS file 
-     */
-    
-    public void loadDSSFile()
-    {
-        int rv;
-        
-        // close the old time series if one exists
-        closeDSSFile();
-        
-        // make a new time series
-        ts = new HecTimeSeries();
-        pd = new HecPairedData();
-          
-        // open the interfaces to the dss file
-        rv = ts.setDSSFileName(lastFile.getAbsolutePath(),true);
-        rv = pd.setDSSFileName(lastFile.getAbsolutePath(),true);
-        
-        
-		for (int j = 0; j < stageDataStr.length; ++j) {
 
-			CondensedReference[] cr = ts.getCondensedCatalog("/*/*/"+stageDataStr[j]+"/*/*/*/");
-
-			for (int i = 0; i < cr.length; i++) {
-				CondensedReference r = cr[i];
-				stagePathsModel.addRow(r.toString().substring(1).split("/"));
-			}
-		}
-        
-        jStageTable.clearSelection();
-        
-        if ( jStageTable.getRowCount() > 0)
-        {
-            jStageTable.addRowSelectionInterval(0,0);
-        }
-    }
-    
-    /** 
-     * Close the the file pointed to by the Timeseries Refernce and set it yo null
-     */
-    
-    private void closeDSSFile()
-    {       
-        if ( ts != null )
-        {
-            // tell the dss library that io with this file is done
-            ts.done();
-        
-            //c lose the file
-            ts.close();
-        
-            // remove the reference
-            ts = null;
-        }
-        
-        if ( pd != null )
-        {
-            // tell the dss library that io with this file is done
-            pd.done();
-        
-            //c lose the file
-            pd.close();
-        
-            // remove the reference
-            pd = null;
-        }
-        
-        // clear the path display list
-        stagePathsModel.setRowCount(0);
-    }
-
-    
     /**
      * run model on the time period indicated in the text boxes
      **/
-    
+
     private void runRange(int startYear, int stopYear, String startDate, String stopDate)
     {
-       StringBuffer buffer = new StringBuffer();
-       String tmp;
-       HecTime startTime;
-       HecTime stopTime;
-       
-       //read the stage area curve
-       int size = stopYear-startYear+1;
-       stageAreaCurve = new PairedDataContainer(); 
-       int rv = pd.read(stageAreaCurve);
-       
-       if ( rv == -2)
-       {
-           javax.swing.JOptionPane.showMessageDialog(this, 
-                   "No dat found in Stage Area Curve",
-                   "Missing Data", 
-                   javax.swing.JOptionPane.ERROR_MESSAGE);           
-       }
-       else if ( rv == - 3)
-       {
-           javax.swing.JOptionPane.showMessageDialog(this, 
-                   "Could not read Stage Area Curve",
-                   "Corrupt DSS File", 
-                   javax.swing.JOptionPane.ERROR_MESSAGE); 
-       }
-       
-       buffer.setLength(0);
-       buffer.append(currentPath);
+        String path;
+        String tmp;
+        HecTime startTime;
+        HecTime stopTime;
 
-       makeAreaTable();
-       
-       years = new intArrayContainer(size);
-       yearFeedingArea = new HecDoubleArray(size);
-       yearRestingArea = new HecDoubleArray(size);
-       yearAvgStage = new HecDoubleArray(size);
-       
-       for(int i = 0; i < size; ++i )
-       {
-            int pos1, pos2;
-            
-            pos1 = buffer.indexOf("/",1);    // 2nd /
-            pos1 = buffer.indexOf("/",pos1+1); // 3rd /
-            pos1 = buffer.indexOf("/",pos1+1); // 4th /
-            pos2 = buffer.indexOf("/",pos1+1); // 5th /
-            
-            // make the path for the current year
-            tmp = startDate + (startYear+i);
-            buffer.replace(pos1+1, pos2, tmp);
-            
+        //read the stage area curve
+        int size = stopYear-startYear+1;
+        stageAreaCurve = new PairedDataContainer();
+        int rv = DSSFileManager.pd.read(stageAreaCurve);
+
+        calculator = new AreaCalculator(stageAreaCurve.xOrdinates, stageAreaCurve.yOrdinates[0]);
+
+        if ( rv == -2)
+        {
+            javax.swing.JOptionPane.showMessageDialog(this,
+                    "No dat found in Stage Area Curve",
+                    "Missing Data",
+                    javax.swing.JOptionPane.ERROR_MESSAGE);
+        }
+        else if ( rv == - 3)
+        {
+            javax.swing.JOptionPane.showMessageDialog(this,
+                    "Could not read Stage Area Curve",
+                    "Corrupt DSS File",
+                    javax.swing.JOptionPane.ERROR_MESSAGE);
+        }
+
+        makeAreaTable();
+
+        years = new intArrayContainer(size);
+        yearFeedingArea = new HecDoubleArray(size);
+        yearRestingArea = new HecDoubleArray(size);
+        yearAvgStage = new HecDoubleArray(size);
+
+        for(int yearIndex = 0; yearIndex < size; ++yearIndex )
+        {
+            String partD = startDate + (startYear+yearIndex);
+            path = GetRecordPath(partD);
+
             // get the window start time
-            startTime = new HecTime(tmp);
+            startTime = new HecTime(partD);
             // set the time to 8 am
             startTime.increment(8,60);
-            // set the window back exaustionDays days
-            startTime.increment(-exaustionDays,1440);
-            
+            // set the window back exhaustionDays days
+            startTime.increment(-exhaustionDays,1440);
+
             // get the window stop time
-            tmp = stopDate + (startYear+i);
+            tmp = stopDate + (startYear+yearIndex);
             stopTime = new HecTime(tmp);
             stopTime.increment(8,60);
-            
+
             if ( stopTime.compareTimes(startTime) == -1 )
             {
-                tmp = stopDate + (startYear+i+1);
+                tmp = stopDate + (startYear+yearIndex+1);
                 stopTime = new HecTime(tmp);
                 stopTime.increment(8,60);
             }
-            
-            // store the path that will be used for data
-            tmp = buffer.toString();
-            
-            // set the path
-            ts.setPathname(tmp);
-            
-            // set the path
-            ts.setTimeWindow(startTime,stopTime);
 
-            if ( recordDaily && i == 0 )
+            DSSFileManager.ts.setPathname(path);
+
+            DSSFileManager.ts.setTimeWindow(startTime,stopTime);
+
+            if ( recordDaily && yearIndex == 0 )
             {
                 initYearBuffer();
-            }            
-            
+            }
+
             fAvg = 0;
             rAvg = 0;
             stageAvg = 0;
-            
+
             clearAreaTable();
             getYearAverages();
-            
-            years.array[i] = startYear + i;
-            yearFeedingArea.set(i,fAvg);
-            yearRestingArea.set(i,rAvg);
-            yearAvgStage.set(i,stageAvg);
-       }
-       
-       if ( recordDaily )
-       {
-           bufferStageAreaTable();
-           dWriter = null;
-       }
-       
-       displayResults();
+
+            years.array[yearIndex] = startYear + yearIndex;
+            yearFeedingArea.set(yearIndex,fAvg);
+            yearRestingArea.set(yearIndex,rAvg);
+            yearAvgStage.set(yearIndex,stageAvg);
+        }
+
+        if ( recordDaily )
+        {
+            bufferStageAreaTable();
+            dWriter = null;
+        }
+
+        displayResults();
     }
-    
+
+    private String GetRecordPath(String partD) {
+        String path;
+        int pos1, pos2;
+
+        pos1 = currentPath.indexOf("/",1);    // 2nd /
+        pos1 = currentPath.indexOf("/",pos1+1); // 3rd /
+        pos1 = currentPath.indexOf("/",pos1+1); // 4th /
+        pos2 = currentPath.indexOf("/",pos1+1); // 5th /
+
+        // make the path for the current year
+        path = currentPath.substring(0,pos1+1)+ partD+currentPath.substring(pos2);
+        return path;
+    }
+
     /** makeAreaTable
      *  Use the stage area table to construct an area incrment map.
-     *  This will hold the number of new accres flooded in 1/10 of a foot 
-     *  increments. For example the mapped value for 90 is the number of 
-     *  acres that flood when the stage moevs from 90 feet tp 90.1 feet */ 
-    
+     *  This will hold the number of new accres flooded in 1/10 of a foot
+     *  increments. For example the mapped value for 90 is the number of
+     *  acres that flood when the stage moevs from 90 feet tp 90.1 feet */
+
     void makeAreaTable()
     {
-        java.util.HashMap<Double,Double> table = new java.util.HashMap<Double,Double>((int)((stageAreaCurve.xOrdinates.length*10+1)/0.75),0.75f);
         areaTable = new java.util.HashMap<Double,TableRec>((int)((stageAreaCurve.xOrdinates.length*10+1)/0.75),0.75f);
-        
-        int l = stageAreaCurve.xOrdinates.length;
-        
-        // the maximum values that will be added to the table
-        double min_val = Math.floor(stageAreaCurve.xOrdinates[0]);
-        double max_val = Math.ceil(stageAreaCurve.xOrdinates[l-1]);
-        
-        // set value for the current value
-        double step_val = 0.1;
-        
-        // the current position in the stage area curve
-        int lowIndex = 0;
-        int highIndex = 1;
-        
-        double lowStage = Math.round(stageAreaCurve.xOrdinates[lowIndex] * 10) / 10.0;
-        double highStage = Math.round(stageAreaCurve.xOrdinates[highIndex] * 10) / 10.0;
-        
-        double lowArea = stageAreaCurve.yOrdinates[0][lowIndex];
-        double highArea = stageAreaCurve.yOrdinates[0][highIndex];
-        
-        // the current value
-        double key = min_val;
-        
-        while( key <= max_val)
+
+        for (int i = 0; i < calculator.incrementalStage.size(); i++)
         {
-            if ( key == lowStage )
-            {
-                table.put(key,lowArea);
-                
-                key = ( (long)(key * 10) + 1 ) / 10.0;
-            }
-            else if ( key == highStage )
-            {
-                table.put(key,highArea);
-                
-                key = ( (long)(key * 10) + 1 ) / 10.0;
-            }
-            else if ( key < lowStage )
-            {
-                table.put(key,lowArea);
-                
-                key = ( (long)(key * 10) + 1 ) / 10.0;
-            }
-            else if ( key > highStage )
-            {
-                
-                while ( key > highStage )
-                {
-                    highIndex += 1;
-                    highStage = Math.round(stageAreaCurve.xOrdinates[highIndex] * 10) / 10.0;
-                    highArea = stageAreaCurve.yOrdinates[0][highIndex];
-                    
-                    lowIndex += 1;
-                    lowStage = Math.round(stageAreaCurve.xOrdinates[lowIndex] * 10) / 10.0;
-                    lowArea = stageAreaCurve.yOrdinates[0][lowIndex];
-                }
-        
-            }
-            else
-            {
-                double range = highStage - lowStage;
-                double shift = (key - lowStage) / range;
-                double ishift = 1.0 - shift;
-                
-                double val = (highArea * shift) + (lowArea * ishift);
-                
-                table.put(key,val);
-                
-                key = ( (long)(key * 10) + 1 ) / 10.0;            
-            }
+            areaTable.put(calculator.incrementalStage.get(i), new TableRec(calculator.incrementalArea.get(i), 0));
         }
-        
-        
-        
-        table.put(stageAreaCurve.xOrdinates[l-1],stageAreaCurve.yOrdinates[0][l-1]);
-        
-        for( key = min_val; key < max_val; key += 1.0)
-        {
-            for( int j = 0; j < 10; ++j )
-            {
-                double k1 = key + (j* 0.1);
-                double k2 = key + ((j+1) * 0.1);
-                areaTable.put(k1,new TableRec(table.get(k2) - table.get(k1),0));
-            }
-        }
-        
     }
-    
+
     /** clearAreaTable()
      *
      * Reset the depletion counters in the area incrment table
      */
-    
+
     private void clearAreaTable()
     {
         java.util.Iterator iter = areaTable.values().iterator();
-        
+
         while( iter.hasNext() )
         {
             TableRec r = (TableRec) iter.next();
             r.count = 0;
         }
     }
-    
+
     /**
      *  Calculate the feeding and resting acres for a year.
      *  Years with fatal data read acres report a value of -1
      **/
-    
+
     private void getYearAverages()
     {
+        int rv;
         doubleArrayContainer vals = new doubleArrayContainer();
-            
-        if ( recordDaily == false )
-        {        
-            
-            int rv = ts.read(vals);
 
-            if ( rv == - 1)
-            {
-                rAvg = HecDouble.NO_VALUE_SET;
-                fAvg = HecDouble.NO_VALUE_SET;
-                stageAvg = HecDouble.NO_VALUE_SET;
-                return;
-            }
-            else if ( rv == -2 )
-            {
-                rAvg = -1;
-                fAvg = -1;
-                return;
-            }
-            else if ( rv == -3 )
-            {
-                rAvg = -1;
-                fAvg = -1;
-                return;
-            }
-        
-            // get the rearing acres
-            fAvg = getYearFeedingAverage(vals);
-
-            //get the spawning acres
-            rAvg = getYearRestingAverage(vals);
-
-            stageAvg = getYearStageAverage(vals);
-        }
-        else
+        if (recordDaily == false)
+        {
+            rv = DSSFileManager.ts.read(vals);
+        } else
         {
             dailyTime = new HecTimeArray();
-            
-            int rv = ts.read(dailyTime,vals);
-            
+            rv = DSSFileManager.ts.read(dailyTime, vals);
+        }
+
+        if( rv < 0) {
+            InitializeErrorValues(rv);
+            return;
+        }
+
+        if (recordDaily)
+        {
             updateDailyArrays();
+        }
 
-            if ( rv == -2 )
-            {
-                rAvg = -1;
-                fAvg = -1;
-                tAvg = -1;
-            }
-            else if ( rv == -3 )
-            {
-                rAvg = -1;
-                fAvg = -1;
-                tAvg = -1;
-            }
-                    
-            // get the rearing acres
-            fAvg = getYearFeedingAverage2(vals);
+        // get the rearing acres
+        fAvg = getYearFeedingAverage(vals, recordDaily);
+        //get the spawning acres
+        rAvg = getYearRestingAverage(vals, recordDaily);
 
-            //get the spawning acres
-            rAvg = getYearRestingAverage2(vals);
+        stageAvg = getYearStageAverage(vals, recordDaily);
 
-            stageAvg = getYearStageAverage2(vals);
-            
-            bufferYearData();
+        if (recordDaily)
+        {
+            appendResultsToDailyReport();
+        }
+    }
+
+    private void InitializeErrorValues(int rv) {
+
+        if ( rv == - 1) {
+            rAvg = HecDouble.NO_VALUE_SET;
+            fAvg = HecDouble.NO_VALUE_SET;
+            stageAvg = HecDouble.NO_VALUE_SET;
+        }
+        if ( rv == -2 )
+        {
+            rAvg = -1;
+            fAvg = -1;
+            tAvg = -1;
+        }
+        else if ( rv == -3 )
+        {
+            rAvg = -1;
+            fAvg = -1;
+            tAvg = -1;
         }
     }
 
     /** getWindowBeginStr()
      *
-     * Return the string representation of the begining of the season */    
-    
+     * Return the string representation of the begining of the season */
+
     private String getWindowBeginStr()
     {
         StringBuffer buffer = new StringBuffer();
-        
+
         if ( seasonStartDay < 10)
         {
             buffer.append("0");
         }
-        
+
         buffer.append(seasonStartDay);
         buffer.append(getMonthName(seasonStartMonth));
-        
+
         return buffer.toString();
     }
 
     /** getWindowEndStr()
      *
      * Return the string representation of the end of the season */
-    
-     private String getWindowEndStr()
+
+    private String getWindowEndStr()
     {
         StringBuffer buffer = new StringBuffer();
-        
+
         if ( seasonStopDay < 10)
         {
             buffer.append("0");
         }
-        
+
         buffer.append(seasonStopDay);
         buffer.append(getMonthName(seasonStopMonth));
-        
+
         return buffer.toString();
-    }   
+    }
 
     /** getMonthName(int m)
      *
      *  Convert a numerical mounth identifier into the correct string to be used
-     *  in construction of an HecDate object */ 
-     
+     *  in construction of an HecDate object */
+
     private String getMonthName(int m)
     {
         switch(m)
         {
             case 1:
                 return "JAN";
-            
+
             case 2:
                 return "FEB";
-            
-             case 3:
+
+            case 3:
                 return "MAR";
-            
+
             case 4:
                 return "APR";
 
             case 5:
                 return "MAY";
-            
+
             case 6:
                 return "JUN";
-            
-             case 7:
+
+            case 7:
                 return "JUL";
-            
+
             case 8:
                 return "AUG";
-                
-             case 9:
+
+            case 9:
                 return "SEP";
-            
+
             case 10:
                 return "OCT";
-            
-             case 11:
+
+            case 11:
                 return "NOV";
-            
+
             case 12:
-                return "DEC";            
-            
+                return "DEC";
+
             default:
                 return "JAN";
-        }       
+        }
     }
 
     /** double getYearFeedingAverage(doubleArrayContainer vals)
      *
-     *  Get the average feeding acres for ducks in the year of data contained in vals.
-     *  The first exaustionDays days are not considered in the average.
-     *  The daily values are not not recorded */          
-    
-    private double getYearFeedingAverage(doubleArrayContainer vals)
+     *  Get the average feeding acres for ducks in the year of data contained in stages.
+     *  The first exhaustionDays days are not considered in the average.
+     *  If recordDaily is set, then daily values are recorded */
+
+    private static double duckRound(double x)
     {
-        double total = 0, hVal, lVal ,sum;
-                
-        int num = vals.array.length - exaustionDays;
-        
-        // get the inital exaustion depth
-        double currentMin = exaustionDepth = getMin(vals,0,exaustionDays);
-        
-        for( int i = exaustionDays; i < vals.array.length; ++i )
-        {
-            // check to see if the exaustion depth needs to be updated
-            if ( currentMin == vals.array[i-exaustionDays] )
-            {
-                currentMin = getMin(vals,i-exaustionDays+1,exaustionDays);
-                if ( currentMin > exaustionDepth)
-                {
-                    exaustionDepth = currentMin;
-                }
-            }
-            
-            // determin the viable feeding range for this day
-            
-            double hs = vals.array[i];
-            double ls = (hs - maxDepth > exaustionDepth) ? hs - maxDepth : exaustionDepth;
-            
-            // get the integer bounding values for the current feeding range
-            int lowVal = (int) ls;
-            int highVal = ( (int) hs == hs ) ? (int) hs : (int) (hs + 1);
-            
-            // round the high stage nad low stage to 10th of a foot increments
-            hs = ((int) (hs * 10)) / 10.0;
-            ls = ((int) (ls * 10)) / 10.0;
-            
-            sum = 0;
-            
-            // add one to the depletion counter for each band in the range highstage to low stage 
-            if ( ls < hs )
-            {
-                for( int j = lowVal; j <= highVal; ++j )
-                {
-                    for( int k = 0; k < 10; ++k )
-                    {
-                        double key = j + (k * 0.1);
-                        if ( ls <= key && key < hs)
-                        {
-                            TableRec r = (TableRec) areaTable.get(key); 
-                            if ( r.count < depletionDays)
-                            {
-                                r.count += 1;
-                                sum += r.area;
-                            }
-                        }
-                    }
-                }
-            }
-            
-            total += sum;
-             
-        }
-        
-        return total /= num;
+        x = Math.round(x * 10) / 10.0;
+        return x;
     }
 
-    /** double getYearFeedingAverage2(doubleArrayContainer vals)
-     *
-     *  Get the average feeding acres for ducks in the year of data contained in vals.
-     *  The first exaustionDays days are not considered in the average.
-     *  The daily values are not recorded */        
-    
-    private double getYearFeedingAverage2(doubleArrayContainer vals)
+    private double getYearFeedingAverage(doubleArrayContainer stages, boolean recordDaily)
     {
-        double total = 0, hVal, lVal, sum;
-                
-        int num = vals.array.length - exaustionDays;
-        
+        double total = 0, sum;
+
+        int num = stages.array.length - exhaustionDays;
+
         // get the inital exaustion depth
-        double currentMin = exaustionDepth = getMin(vals,0,exaustionDays);
-        
-        for( int i = exaustionDays; i < vals.array.length; ++i )
+        double currentMin = exhaustionDepth = getMin(stages,0, exhaustionDays);
+
+        for(int i = exhaustionDays; i < stages.array.length; ++i )
         {
             // check to see if the exaustion depth needs to be updated
-            if ( currentMin == vals.array[i-exaustionDays] )
+            if ( currentMin == stages.array[i- exhaustionDays] )
             {
-                currentMin = getMin(vals,i-exaustionDays+1,exaustionDays);
-                if ( currentMin > exaustionDepth)
+                currentMin = getMin(stages,i- exhaustionDays +1, exhaustionDays);
+                if ( currentMin > exhaustionDepth)
                 {
-                    exaustionDepth = currentMin;
+                    exhaustionDepth = currentMin;
                 }
             }
-            
-            dailyExaustion.set(i,exaustionDepth);
-            
-            // determin the viable feeding range for this day
-            
-            double hs = vals.array[i];
-            double ls = (hs - maxDepth > exaustionDepth) ? hs - maxDepth : exaustionDepth;
-            
-            // get the integer bounding values for the current feeding range
-            int lowVal = (int) ls;
-            int highVal = ( (int) hs == hs ) ? (int) hs : (int) (hs + 1);
-            
+
+            if (recordDaily){
+                dailyExaustion.set(i, exhaustionDepth);
+            }
+
+            // determine the viable feeding range for this day
+            double hs = stages.array[i];
+            double bottom = hs - maxDepth;
+            double ls = (bottom > exhaustionDepth) ? bottom : exhaustionDepth;
+
             // round the high stage nad low stage to 10th of a foot increments
-            hs = ((int) (hs * 10)) / 10.0;
-            ls = ((int) (ls * 10)) / 10.0;
-            
+            hs = duckRound(hs);
+            ls = duckRound(ls);
             sum = 0;
-            
-            // add one to the depletion counter for each band in the range highstage to low stage 
+
+            // add one to the depletion counter for each band in the range highstage to low stage
             if ( ls < hs )
             {
-                for( int j = lowVal; j <= highVal; ++j )
+                double stage = ls;
+                while(stage <= hs)
                 {
-                    for( int k = 0; k < 10; ++k )
+                    if ( ls <= stage && stage < hs)
                     {
-                        double key = j + (k * 0.1);
-                        if ( ls <= key && key < hs)
+                        TableRec r = areaTable.get(stage);
+                        if (r != null && r.count < depletionDays)
                         {
-                            TableRec r = (TableRec) areaTable.get(key); 
-                            if ( r.count < depletionDays)
-                            {
-                                r.count += 1;
-                                sum += r.area;
-                            }
+                            r.count++;
+                            sum += r.area;
                         }
                     }
+                    stage = duckRound(stage+0.1);
                 }
             }
-            
+
             total += sum;
-            
-            dailyFeeding.set(i,sum);
-      
-             
+
+            if (recordDaily){
+                dailyFeeding.set(i,sum);
+            }
+
         }
-        
+
         return total /= num;
     }
 
     /** double getYearRestingAverage(doubleArrayContainer vals)
      *
      *  Get the average resting acres for ducks in the year of data contained in vals.
-     *  The first exaustionDays days are not considered in the average.
-     *  The daily values are recorded */        
-    
-    private double getYearRestingAverage(doubleArrayContainer vals)
-    {
-        double total = 0, hVal;
-                
-        int num = vals.array.length - exaustionDays;
-        
-        for( int i = exaustionDays; i < vals.array.length; ++i )
-        {
-            double hs = vals.array[i];           
-            hVal = getAreaForStage(hs);
-            
-            total += hVal;
-        }
-        
-        return total /= num;
-    }    
+     *  The first exhaustionDays days are not considered in the average.
+     *  The daily values are recorded */
 
     /** double getYearRestingAverage2(doubleArrayContainer vals)
      *
      *  Get the average resting acres for ducks in the year of data contained in vals.
-     *  The first exaustionDays days are not considered in the average.
-     *  The daily values are not recorded */    
-    
-    private double getYearRestingAverage2(doubleArrayContainer vals)
+     *  The first exhaustionDays days are not considered in the average.
+     *  The daily values are not recorded */
+
+    private double getYearRestingAverage(doubleArrayContainer vals, boolean recordDaily)
     {
         double total = 0, hVal;
-                
-        int num = vals.array.length - exaustionDays;
-        
-        for( int i = exaustionDays; i < vals.array.length; ++i )
+
+        int num = vals.array.length - exhaustionDays;
+
+        for(int i = exhaustionDays; i < vals.array.length; ++i )
         {
-            double hs = vals.array[i];           
-            hVal = getAreaForStage(hs);     
-            
-            dailyResting.set(i,hVal);
-            
+            double hs = vals.array[i];
+            hVal = getAreaForStage(hs);
+
+            if (recordDaily){
+                dailyResting.set(i,hVal);
+            }
+
             total += hVal;
         }
-        
+
         return total /= num;
     }
-    
+
     /** double getYearStageAverage(doubleArrayContainer vals)
      *
      *  Get the average stage for the year of data contained in vals.
-     *  The first exaustionDays days are not considered in the average.
+     *  The first exhaustionDays days are not considered in the average.
      *  The daily stages are not recorded */
-    
-    private double getYearStageAverage(doubleArrayContainer vals)
-    {
-        double total = 0;
-        
-        int num = vals.array.length - exaustionDays;
-        
-        for( int i = exaustionDays; i < vals.array.length; ++i)
-        {
-            total += vals.array[i];
-        }
-        
-        return total / vals.array.length;
-    }
-    
+
     /** double getYearStageAverage2(doubleArrayContainer vals)
      *
      *  Get the average stage for the year of data contained in vals.
-     *  The first exaustionDays days are not considered in the average.
+     *  The first exhaustionDays days are not considered in the average.
      *  The daily stages are recorded */
-    
-    private double getYearStageAverage2(doubleArrayContainer vals)
+
+    private double getYearStageAverage(doubleArrayContainer vals, boolean recordDaily)
     {
-        double val, total = 0;
-        
-        int num = vals.array.length - exaustionDays;
-        
-        
-        for( int i = 0; i < exaustionDays; ++i )
+        double total = 0;
+
+        for( int i = 0; i < vals.array.length; ++i )
         {
-            dailyStage.set(i,vals.array[i]);
+            if (recordDaily)
+            {
+                dailyStage.set(i,vals.array[i]);
+            }
+            total += vals.array[i];
         }
-        
-        for( int i = exaustionDays; i < vals.array.length; ++i)
-        {
-            val = vals.array[i];
-            
-            dailyStage.set(i,val);
-            
-            total += val;
-        }
-        
         return total / vals.array.length;
-    } 
-    
+    }
+
     /** double getAreaForStage(double stage)
      *
      * Find the area for a stage in a stage area curve that records only integer stags.
      * Linear Interpolation is used if the input stage is not an integer
      */
-    
+
     private double getAreaForStage(double stage)
     {
         int pos1, pos2;
-            
-        int hStage;
-        int lStage;
-            
+
         double val1, val2;
-            
+
         if ( stage == (int) stage )
         {
             pos1 = java.util.Arrays.binarySearch(stageAreaCurve.xOrdinates,(int) stage);
@@ -1647,39 +1377,39 @@ public class MainWindow extends javax.swing.JFrame {
         }
         else
         {
-           pos1 = java.util.Arrays.binarySearch(stageAreaCurve.xOrdinates,(int) stage);
-           pos2 = java.util.Arrays.binarySearch(stageAreaCurve.xOrdinates,(int) stage+1);
-                
-           if ( pos1 >= 0 && pos2 >= 0)
-           {
-               val1 = stageAreaCurve.yOrdinates[0][pos1];
-               val2 = stageAreaCurve.yOrdinates[0][pos2];
-                
-               double scale = stage - (int) stage;
-               double iscale = 1 - scale;
-                
-               return (iscale * val1) + (scale * val2);
-           }
-           else if ( pos1 >= 0 )
-           {
-               return stageAreaCurve.yOrdinates[0][pos1];
-           }
-           else if ( pos2 >= 0 )
-           {
-               return stageAreaCurve.yOrdinates[0][pos2];
-           }
-           else
-           {
-               return 0;
-           }
-       }   
+            pos1 = java.util.Arrays.binarySearch(stageAreaCurve.xOrdinates,(int) stage);
+            pos2 = java.util.Arrays.binarySearch(stageAreaCurve.xOrdinates,(int) stage+1);
+
+            if ( pos1 >= 0 && pos2 >= 0)
+            {
+                val1 = stageAreaCurve.yOrdinates[0][pos1];
+                val2 = stageAreaCurve.yOrdinates[0][pos2];
+
+                double scale = stage - (int) stage;
+                double iscale = 1 - scale;
+
+                return (iscale * val1) + (scale * val2);
+            }
+            else if ( pos1 >= 0 )
+            {
+                return stageAreaCurve.yOrdinates[0][pos1];
+            }
+            else if ( pos2 >= 0 )
+            {
+                return stageAreaCurve.yOrdinates[0][pos2];
+            }
+            else
+            {
+                return 0;
+            }
+        }
     }
 
-     /** getMin(doubleArrayContainer vlas, int idx, int window)
+    /** getMin(doubleArrayContainer vlas, int idx, int window)
      *
-     *  return the minimum value found in the container vals betwenn the
-     * indeces idx and idx + window - 1 */   
-    
+     *  return the minimum value found in the container vals between the
+     * indeces idx and idx + window - 1 */
+
     private double getMin(doubleArrayContainer vals, int idx, int window)
     {
         double min = vals.array[idx];
@@ -1689,18 +1419,18 @@ public class MainWindow extends javax.swing.JFrame {
             {
                 min = vals.array[i];
             }
-          
+
         }
-        
+
         return min;
-        
+
     }
-    
+
     /** getMax(doubleArrayContainer vlas, int idx, int window)
      *
      *  return the maximum value found in the container vals betwenn the
      * indeces idx and idx + window - 1 */
-    
+
     private double getMax(doubleArrayContainer vals, int idx, int window)
     {
         double max = vals.array[idx];
@@ -1710,44 +1440,44 @@ public class MainWindow extends javax.swing.JFrame {
             {
                 max = vals.array[i];
             }
-          
+
         }
-        
+
         return max;
-        
+
     }
-         
+
     /** void displayResults()
      *
      * Write the yearly avearge table into a string buffer,
      * display the buffer and write the buffer to file, whose name
      * is derieved form the selected gage and stage area curve */
-    
+
     void displayResults()
     {
         StringBuffer buffer = new StringBuffer();
-        
+
         buffer.append("DSS File:\t");
-        buffer.append(ts.DSSFileName());
+        buffer.append(DSSFileManager.ts.DSSFileName());
         buffer.append("\n");
-        
+
         buffer.append("Stage Elevatopn Path:\t");
-        buffer.append(ts.pathname());
+        buffer.append(DSSFileManager.ts.pathname());
         buffer.append("\n");
-        
+
         buffer.append("Stage Area Path:\t");
-        buffer.append(pd.pathname());
+        buffer.append(DSSFileManager.pd.pathname());
         buffer.append("\n");
-        
+
         buffer.append("Time Window:\t");
         buffer.append(jSeasonField.getText() + "\n");
-        buffer.append("Days untill Exaustion : " + exaustionDays + " Days\n");
+        buffer.append("Days untill Exaustion : " + exhaustionDays + " Days\n");
         buffer.append("Days untill Depletion : " + depletionDays + " Days\n");
 
         buffer.append("\n\n");
-        
+
         buffer.append("Year\tStage\tFeeding\tResting\n\n");
-        
+
         for(int i = 0; i < years.array.length; ++i )
         {
             buffer.append(years.array[i]);
@@ -1759,7 +1489,7 @@ public class MainWindow extends javax.swing.JFrame {
             buffer.append(yearRestingArea.value(i).toString());
             buffer.append("\n");
         }
-        
+
         buffer.append("\nAverage Season Stage\t");
         buffer.append(yearAvgStage.average());
         buffer.append("\n");
@@ -1769,14 +1499,14 @@ public class MainWindow extends javax.swing.JFrame {
         buffer.append("Maximum Yearly Stage\t");
         buffer.append(yearAvgStage.maximum());
         buffer.append("\n\n");
-        
+
         buffer.append("Avg Feeding\tAvg Resting\n");
         buffer.append(yearFeedingArea.average().string(1,true));
         buffer.append("\t");
         buffer.append(yearRestingArea.average().string(1,true));
-        buffer.append("\n");        
-        
-        String fileName =  ts.aPart() + "_" + ts.bPart() + "_" + ts.fPart();
+        buffer.append("\n");
+
+        String fileName =  DSSFileManager.ts.aPart() + "_" + DSSFileManager.ts.bPart() + "_" + DSSFileManager.ts.fPart();
         fileName += ".evd";
         String filePath = outputDirPath + "/" + fileName;
         try
@@ -1787,101 +1517,101 @@ public class MainWindow extends javax.swing.JFrame {
         }
         catch(java.io.IOException io_excep)
         {
-           javax.swing.JOptionPane.showMessageDialog(this, 
-                   "Error writing file " + filePath,
-                   "IOError", 
-                   javax.swing.JOptionPane.ERROR_MESSAGE);
-      
+            javax.swing.JOptionPane.showMessageDialog(this,
+                    "Error writing file " + filePath,
+                    "IOError",
+                    javax.swing.JOptionPane.ERROR_MESSAGE);
+
         }
-        
+
         ReportDisplay rd = new ReportDisplay();
         rd.setText(buffer.toString());
         rd.setTitle(fileName);
         rd.setVisible(true);
-        
+
         if ( recordDaily )
         {
             displayDailyResults();
         }
     }
-     
+
     /** void displayDailyResults
      *
      *  Display the buffer containing the daily calculated values for
      *  feeding area, and resting area, also display the daily stage value
-     *  and the exaustion stage level. The function also writes the buffer to 
+     *  and the exaustion stage level. The function also writes the buffer to
      *  file  "daily_results.txt" in the same directory as the program. This file
-     * is use fule for verifing the models operation */ 
-    
+     * is use fule for verifing the models operation */
+
     private void displayDailyResults()
     {
         try
         {
             dWriter = new java.io.FileWriter("daily_results.txt");
-        
+
             dWriter.write(dBuffer.toString());
             dWriter.flush();
-            
-            
+
+
         }
         catch( java.io.IOException e)
         {
-            javax.swing.JOptionPane.showMessageDialog(this, 
-                   "Error writing file " + "daily_results.txt",
-                   "IOError", 
-                   javax.swing.JOptionPane.ERROR_MESSAGE);           
+            javax.swing.JOptionPane.showMessageDialog(this,
+                    "Error writing file " + "daily_results.txt",
+                    "IOError",
+                    javax.swing.JOptionPane.ERROR_MESSAGE);
         }
-        
+
         ReportDisplay rd = new ReportDisplay();
         rd.setText(dBuffer.toString());
         rd.setTitle("daily_results.txt");
-        rd.setVisible(true);    
-        
+        rd.setVisible(true);
+
     }
-    
-     /** void initYearBuffer()
+
+    /** void initYearBuffer()
      *
      * This function is misnamed it should be initDaily Buffer.
      * The function initalises the buffer that holds the dailly
      * calculations for each year */
-    
+
     private void initYearBuffer()
     {
         dBuffer = new StringBuffer();
         dBuffer.append("DSS File:\t");
-        dBuffer.append(ts.DSSFileName());
+        dBuffer.append(DSSFileManager.ts.DSSFileName());
         dBuffer.append("\n");
-        
+
         dBuffer.append("Stage Elevatopn Path:\t");
-        dBuffer.append(ts.pathname());
+        dBuffer.append(DSSFileManager.ts.pathname());
         dBuffer.append("\n");
-        
+
         dBuffer.append("Stage Area Path:\t");
-        dBuffer.append(pd.pathname());
+        dBuffer.append(DSSFileManager.pd.pathname());
         dBuffer.append("\n");
-        
+
         dBuffer.append("Time Window:\t");
         dBuffer.append(jSeasonField.getText() + "\n");
-        dBuffer.append("Days until Exaustion: " + exaustionDays + " Days\n");
+        dBuffer.append("Days until Exaustion: " + exhaustionDays + " Days\n");
         dBuffer.append("Max Rearing Depth: " + maxDepth + " Feet\n");
-        dBuffer.append("\n\n");        
-        
-        dBuffer.append("Year\tStage\tFeeding\tResting\tExaustion Stage\n");
+        dBuffer.append("\n\n");
+
+        dBuffer.append("Year\tStage (ft)\tFeeding (cal)\tResting (hrs)\tExaustion Stage\n");
     }
-    
-    /** void bufferYearData()
+
+    /** void appendResultsToDailyReport()
      *
      * This function saves the dailly values for the current year to a buffer
      * the buffer is diplayed with displayDailyResults */
-    
-    private void bufferYearData()
+
+    private void appendResultsToDailyReport()
     {
-        
+
         for(int i = 0; i < dailyTime.getIntArray().length; ++i )
         {
-            dBuffer.append( dailyTime.element(i).month() + "/"  + 
-                            dailyTime.element(i).day() + "/"  +
-                            dailyTime.element(i).year());
+            dBuffer.append( dailyTime.element(i).month() + "/"  +
+                    dailyTime.element(i).day() + "/"  +
+                    dailyTime.element(i).year());
             dBuffer.append("\t");
             dBuffer.append( dailyStage.element(i).string(2,true) );
             dBuffer.append("\t");
@@ -1893,42 +1623,42 @@ public class MainWindow extends javax.swing.JFrame {
             dBuffer.append("\n");
         }
     }
-    
+
     /** void bufferStageAreaTable()
-     * 
+     *
      * This function writes the incremental stage area curve table used by the model
-     * into the buffer that holds the daily results. The table is an incremental table, 
-     * it shows the change in flooded area at a given elevation not the flooded elevation at 
-     * that elevation. To find the flooded area at an elevation sum all table entries equal to 
+     * into the buffer that holds the daily results. The table is an incremental table,
+     * it shows the change in flooded area at a given elevation not the flooded elevation at
+     * that elevation. To find the flooded area at an elevation sum all table entries equal to
      * or less than the desired elevation */
-    
+
     private void bufferStageAreaTable()
     {
         int l = stageAreaCurve.xOrdinates.length;
-        
+
         dBuffer.append("\n\nStage\tArea\n");
-        
+
         for( int i = (int) stageAreaCurve.xOrdinates[0]; i < stageAreaCurve.xOrdinates[l-1]; ++i)
         {
             for( int j = 0; j < 10; ++j)
             {
                 double key = i + (j * 0.1);
-                double val = ((TableRec) areaTable.get(key)).area;
-                
+                double val = (areaTable.get(key)).area;
+
                 dBuffer.append(key + "\t" + val + "\n");
             }
         }
     }
-    
+
     /** void updateDailyArrays()
-     * 
+     *
      * Make sure that the arrays used to hold the daily values for the current year
      * exist and are the correct size */
-    
+
     private void updateDailyArrays()
     {
         int size = dailyTime.getIntArray().length;
-        
+
         if ( dailyStage == null )
         {
             dailyStage = new HecDoubleArray(size);
@@ -1937,7 +1667,7 @@ public class MainWindow extends javax.swing.JFrame {
         {
             dailyStage.setSize(size);
         }
-        
+
         if ( dailyResting == null )
         {
             dailyResting = new HecDoubleArray(size);
@@ -1945,9 +1675,9 @@ public class MainWindow extends javax.swing.JFrame {
         else
         {
             dailyResting.setSize(size);
-        }       
+        }
 
-         if ( dailyFeeding == null )
+        if ( dailyFeeding == null )
         {
             dailyFeeding = new HecDoubleArray(size);
         }
@@ -1955,7 +1685,7 @@ public class MainWindow extends javax.swing.JFrame {
         {
             dailyFeeding.setSize(size);
         }
-        
+
         if ( dailyExaustion == null )
         {
             dailyExaustion = new HecDoubleArray(size);
@@ -1964,10 +1694,10 @@ public class MainWindow extends javax.swing.JFrame {
         {
             dailyExaustion.setSize(size);
         }
-        
-        
+
+
     }
-   
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JTable jAreaTable;
     private javax.swing.JButton jButton1;
@@ -2003,12 +1733,12 @@ public class MainWindow extends javax.swing.JFrame {
     private javax.swing.JFormattedTextField jStartText;
     private javax.swing.JFormattedTextField jStopText;
     // End of variables declaration//GEN-END:variables
-    
+
     //User Variables
     private java.io.File lastFile;
     private boolean fileLoaded;
-    private HecTimeSeries ts;
-    private HecPairedData pd;
+    //private HecTimeSeries ts;
+    //private HecPairedData pd;
     private PairedDataContainer stageAreaCurve;
     private String currentPath;
     private intArrayContainer years;
@@ -2020,34 +1750,36 @@ public class MainWindow extends javax.swing.JFrame {
     private double rAvg;
     private double tAvg;
     private double stageAvg;
-    
+
     private class TableRec extends Object
     {
-        public TableRec(double a, int c) 
-        { 
-            area = a; 
-            count = c; 
+        public TableRec(double a, int c)
+        {
+            area = a;
+            count = c;
         }
-        
+
         public String toString() { return "{area: " + area + " count: " + count + "}"; }
-        
+
         public double area;
         public int count;
-    };
-    
+    }
+
     private java.util.HashMap<Double,TableRec> areaTable;
-    
+    private AreaCalculator calculator;
+    private DSSFile DSSFileManager;
+
     javax.swing.text.NumberFormatter df;
     javax.swing.text.NumberFormatter df2;
-    javax.swing.text.NumberFormatter df3;  
+    javax.swing.text.NumberFormatter df3;
     javax.swing.text.MaskFormatter yf1;
     javax.swing.text.MaskFormatter yf2;
-    
+
     //Table variables
-    
+
     javax.swing.table.DefaultTableModel stagePathsModel;
     javax.swing.table.DefaultTableModel areaPathsModel;
-    
+
     //Prefences variables
     private Preferences prefs;
     private String stageDataStrings;
@@ -2060,10 +1792,10 @@ public class MainWindow extends javax.swing.JFrame {
     private int seasonStartMonth;
     private int seasonStopMonth;
     private float maxDepth;
-    private int exaustionDays;
-    private double exaustionDepth;
+    private int exhaustionDays;
+    private double exhaustionDepth;
     private int depletionDays;
-    
+
     private boolean recordDaily;
     private HecTimeArray dailyTime;
     private HecDoubleArray dailyStage;
