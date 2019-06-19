@@ -79,7 +79,7 @@ public class MainWindow extends javax.swing.JFrame {
         seasonStopDay = prefs.getInt("Season Stop Day",29);
 
         // Get the days to exaustion
-        exaustionDays = prefs.getInt("Exaustion Days",30);
+        exhaustionDays = prefs.getInt("Exaustion Days",30);
 
         // Get the depletion Days
         depletionDays = prefs.getInt("DepletionDays",120);
@@ -427,7 +427,7 @@ public class MainWindow extends javax.swing.JFrame {
         jMaxDepthText.setBounds(210, 20, 30, 21);
 
         jDurField.setToolTipText("");
-        jDurField.setValue(exaustionDays);
+        jDurField.setValue(exhaustionDays);
         jDurField.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jDurFieldActionPerformed(evt);
@@ -626,10 +626,10 @@ public class MainWindow extends javax.swing.JFrame {
         if (jDurField.getValue() instanceof Integer)
         {
             Integer i = (Integer) jDurField.getValue();
-            exaustionDays = i.intValue();
+            exhaustionDays = i.intValue();
         }
 
-        prefs.putInt("Exaustion Days",exaustionDays);
+        prefs.putInt("Exaustion Days", exhaustionDays);
     }//GEN-LAST:event_jDurFieldActionPerformed
 
     /** This opens a dialog box alowing a new time window to be selected */
@@ -712,9 +712,9 @@ public class MainWindow extends javax.swing.JFrame {
         if (jDurField.getValue() instanceof Integer)
         {
             Integer i = (Integer) jDurField.getValue();
-            exaustionDays = i.intValue();
+            exhaustionDays = i.intValue();
         }
-        prefs.putInt("Exaustion Days",exaustionDays);
+        prefs.putInt("Exaustion Days", exhaustionDays);
 
         int firstYear = Integer.parseInt(jStartText.getText());
         int lastYear = Integer.parseInt(jStopText.getText());
@@ -978,8 +978,8 @@ public class MainWindow extends javax.swing.JFrame {
             startTime = new HecTime(partD);
             // set the time to 8 am
             startTime.increment(8,60);
-            // set the window back exaustionDays days
-            startTime.increment(-exaustionDays,1440);
+            // set the window back exhaustionDays days
+            startTime.increment(-exhaustionDays,1440);
 
             // get the window stop time
             tmp = stopDate + (startYear+yearIndex);
@@ -1223,80 +1223,76 @@ public class MainWindow extends javax.swing.JFrame {
 
     /** double getYearFeedingAverage(doubleArrayContainer vals)
      *
-     *  Get the average feeding acres for ducks in the year of data contained in vals.
-     *  The first exaustionDays days are not considered in the average.
-     *  The daily values are not not recorded */
+     *  Get the average feeding acres for ducks in the year of data contained in stages.
+     *  The first exhaustionDays days are not considered in the average.
+     *  If recordDaily is set, then daily values are recorded */
 
-    /** double getYearFeedingAverage2(doubleArrayContainer vals)
-     *
-     *  Get the average feeding acres for ducks in the year of data contained in vals.
-     *  The first exhaustion Days days are not considered in the average.
-     *  The daily values are not recorded */
+    private static double duckRound(double x)
+    {
+        x = Math.round(x * 10) / 10.0;
+        return x;
+    }
 
-    private double getYearFeedingAverage(doubleArrayContainer vals, boolean dailyExhaustionSet)
+    private double getYearFeedingAverage(doubleArrayContainer stages, boolean recordDaily)
     {
         double total = 0, sum;
 
-        int num = vals.array.length - exaustionDays;
+        int num = stages.array.length - exhaustionDays;
 
         // get the inital exaustion depth
-        double currentMin = exaustionDepth = getMin(vals,0,exaustionDays);
+        double currentMin = exhaustionDepth = getMin(stages,0, exhaustionDays);
 
-        for( int i = exaustionDays; i < vals.array.length; ++i )
+        for(int i = exhaustionDays; i < stages.array.length; ++i )
         {
             // check to see if the exaustion depth needs to be updated
-            if ( currentMin == vals.array[i-exaustionDays] )
+            if ( currentMin == stages.array[i- exhaustionDays] )
             {
-                currentMin = getMin(vals,i-exaustionDays+1,exaustionDays);
-                if ( currentMin > exaustionDepth)
+                currentMin = getMin(stages,i- exhaustionDays +1, exhaustionDays);
+                if ( currentMin > exhaustionDepth)
                 {
-                    exaustionDepth = currentMin;
+                    exhaustionDepth = currentMin;
                 }
             }
 
-            if (dailyExhaustionSet){
-                dailyExaustion.set(i,exaustionDepth);
+            if (recordDaily){
+                dailyExaustion.set(i, exhaustionDepth);
             }
 
-            // determin the viable feeding range for this day
-
-            double hs = vals.array[i];
-            double ls = (hs - maxDepth > exaustionDepth) ? hs - maxDepth : exaustionDepth;
-
-            // get the integer bounding values for the current feeding range
-            int lowVal = (int) ls;
-            int highVal = ( (int) hs == hs ) ? (int) hs : (int) (hs + 1);
+            // determine the viable feeding range for this day
+            double hs = stages.array[i];
+            double bottom = hs - maxDepth;
+            double ls = (bottom > exhaustionDepth) ? bottom : exhaustionDepth;
 
             // round the high stage nad low stage to 10th of a foot increments
-            hs = ((int) (hs * 10)) / 10.0;
-            ls = ((int) (ls * 10)) / 10.0;
-
+            hs = duckRound(hs);
+            ls = duckRound(ls);
             sum = 0;
 
             // add one to the depletion counter for each band in the range highstage to low stage
             if ( ls < hs )
             {
-                for( int j = lowVal; j <= highVal; ++j )
+                double stage = ls;
+                while(stage <= hs)
                 {
-                    for( int k = 0; k < 10; ++k )
+                    if ( ls <= stage && stage < hs)
                     {
-                        double key = j + (k * 0.1);
-                        if ( ls <= key && key < hs)
+                        TableRec r = areaTable.get(stage);
+                        if (r != null && r.count < depletionDays)
                         {
-                            TableRec r = areaTable.get(key);
-                            if (r != null && r.count < depletionDays)
-                            {
-                                r.count += 1;
-                                sum += r.area;
-                            }
+                            r.count++;
+                            sum += r.area;
                         }
                     }
+                    stage = duckRound(stage+0.1);
                 }
             }
 
             total += sum;
 
-            dailyFeeding.set(i,sum);
+            if (recordDaily){
+                dailyFeeding.set(i,sum);
+            }
+
         }
 
         return total /= num;
@@ -1305,27 +1301,27 @@ public class MainWindow extends javax.swing.JFrame {
     /** double getYearRestingAverage(doubleArrayContainer vals)
      *
      *  Get the average resting acres for ducks in the year of data contained in vals.
-     *  The first exaustionDays days are not considered in the average.
+     *  The first exhaustionDays days are not considered in the average.
      *  The daily values are recorded */
 
     /** double getYearRestingAverage2(doubleArrayContainer vals)
      *
      *  Get the average resting acres for ducks in the year of data contained in vals.
-     *  The first exaustionDays days are not considered in the average.
+     *  The first exhaustionDays days are not considered in the average.
      *  The daily values are not recorded */
 
-    private double getYearRestingAverage(doubleArrayContainer vals, boolean dailyRestingSet)
+    private double getYearRestingAverage(doubleArrayContainer vals, boolean recordDaily)
     {
         double total = 0, hVal;
 
-        int num = vals.array.length - exaustionDays;
+        int num = vals.array.length - exhaustionDays;
 
-        for( int i = exaustionDays; i < vals.array.length; ++i )
+        for(int i = exhaustionDays; i < vals.array.length; ++i )
         {
             double hs = vals.array[i];
             hVal = getAreaForStage(hs);
 
-            if (dailyRestingSet){
+            if (recordDaily){
                 dailyResting.set(i,hVal);
             }
 
@@ -1338,59 +1334,26 @@ public class MainWindow extends javax.swing.JFrame {
     /** double getYearStageAverage(doubleArrayContainer vals)
      *
      *  Get the average stage for the year of data contained in vals.
-     *  The first exaustionDays days are not considered in the average.
+     *  The first exhaustionDays days are not considered in the average.
      *  The daily stages are not recorded */
 
     /** double getYearStageAverage2(doubleArrayContainer vals)
      *
      *  Get the average stage for the year of data contained in vals.
-     *  The first exaustionDays days are not considered in the average.
+     *  The first exhaustionDays days are not considered in the average.
      *  The daily stages are recorded */
 
-    private double getYearStageAverageOld(doubleArrayContainer vals, boolean dailyStageSet)
-    {
-        double val, total = 0;
-
-        if (dailyStageSet){
-            for( int i = 0; i < exaustionDays; ++i )
-            {
-                dailyStage.set(i,vals.array[i]);
-            }
-        }
-
-        if (dailyStageSet){
-            for( int i = exaustionDays; i < vals.array.length; ++i)
-            {
-                dailyStage.set(i,vals.array[i]);
-
-                total += vals.array[i];
-            }
-        } else {
-            for( int i = exaustionDays; i < vals.array.length; ++i)
-            {
-                total += vals.array[i];
-            }
-        }
-
-
-        return total / vals.array.length;
-    }
-
-    private double getYearStageAverage(doubleArrayContainer vals, boolean dailyStageSet)
+    private double getYearStageAverage(doubleArrayContainer vals, boolean recordDaily)
     {
         double total = 0;
 
         for( int i = 0; i < vals.array.length; ++i )
         {
-            if (dailyStageSet)
+            if (recordDaily)
             {
                 dailyStage.set(i,vals.array[i]);
             }
-
-            if (i >= exaustionDays)
-            {
-                total += vals.array[i];
-            }
+            total += vals.array[i];
         }
         return total / vals.array.length;
     }
@@ -1444,7 +1407,7 @@ public class MainWindow extends javax.swing.JFrame {
 
     /** getMin(doubleArrayContainer vlas, int idx, int window)
      *
-     *  return the minimum value found in the container vals betwenn the
+     *  return the minimum value found in the container vals between the
      * indeces idx and idx + window - 1 */
 
     private double getMin(doubleArrayContainer vals, int idx, int window)
@@ -1508,7 +1471,7 @@ public class MainWindow extends javax.swing.JFrame {
 
         buffer.append("Time Window:\t");
         buffer.append(jSeasonField.getText() + "\n");
-        buffer.append("Days untill Exaustion : " + exaustionDays + " Days\n");
+        buffer.append("Days untill Exaustion : " + exhaustionDays + " Days\n");
         buffer.append("Days untill Depletion : " + depletionDays + " Days\n");
 
         buffer.append("\n\n");
@@ -1629,7 +1592,7 @@ public class MainWindow extends javax.swing.JFrame {
 
         dBuffer.append("Time Window:\t");
         dBuffer.append(jSeasonField.getText() + "\n");
-        dBuffer.append("Days until Exaustion: " + exaustionDays + " Days\n");
+        dBuffer.append("Days until Exaustion: " + exhaustionDays + " Days\n");
         dBuffer.append("Max Rearing Depth: " + maxDepth + " Feet\n");
         dBuffer.append("\n\n");
 
@@ -1829,8 +1792,8 @@ public class MainWindow extends javax.swing.JFrame {
     private int seasonStartMonth;
     private int seasonStopMonth;
     private float maxDepth;
-    private int exaustionDays;
-    private double exaustionDepth;
+    private int exhaustionDays;
+    private double exhaustionDepth;
     private int depletionDays;
 
     private boolean recordDaily;
