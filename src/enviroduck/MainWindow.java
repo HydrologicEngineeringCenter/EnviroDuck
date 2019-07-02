@@ -986,7 +986,7 @@ public class MainWindow extends javax.swing.JFrame {
             stopTime = new HecTime(tmp);
             stopTime.increment(8,60);
 
-            if ( stopTime.compareTimes(startTime) == -1 )
+            if ( QuackYear(partD, tmp) == -1 )
             {
                 tmp = stopDate + (startYear+yearIndex+1);
                 stopTime = new HecTime(tmp);
@@ -1022,6 +1022,45 @@ public class MainWindow extends javax.swing.JFrame {
         }
 
         displayResults();
+    }
+
+    private int QuackYear(String startDate, String endDate) {
+        String[] months = {"JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"};
+        int startMonthIndex = -1;
+        int endMonthIndex = -1;
+        String startMonth = startDate.substring(2, 5);
+        String endMonth = endDate.substring(2, 5);
+
+        //Find index of months in month list
+        for (int i = 0; i < months.length; i++)
+        {
+            if (startMonth.equals(months[i]))
+            {
+                startMonthIndex = i;
+                break;
+            }
+        }
+
+        for (int i = 0; i < months.length; i++)
+        {
+            if (endMonth.equals(months[i]))
+            {
+                endMonthIndex = i;
+                break;
+            }
+        }
+
+        if (startMonthIndex == -1 || endMonthIndex == -1)
+        {
+            return -2;
+        }
+        if (startMonthIndex <= endMonthIndex)
+        {
+            return 0;
+        } else
+        {
+            return -1;
+        }
     }
 
     private String GetRecordPath(String partD) {
@@ -1100,7 +1139,7 @@ public class MainWindow extends javax.swing.JFrame {
         }
 
         // get the rearing acres
-        fAvg = getYearFeedingAverage(vals, recordDaily);
+        fAvg =  getYearFeedingAverage(vals, recordDaily);
         //get the spawning acres
         rAvg = getYearRestingAverage(vals, recordDaily);
 
@@ -1244,16 +1283,6 @@ public class MainWindow extends javax.swing.JFrame {
 
         for(int i = exhaustionDays; i < stages.array.length; ++i )
         {
-            // check to see if the exaustion depth needs to be updated
-            if ( currentMin == stages.array[i- exhaustionDays] )
-            {
-                currentMin = getMin(stages,i- exhaustionDays +1, exhaustionDays);
-                if ( currentMin > exhaustionDepth)
-                {
-                    exhaustionDepth = currentMin;
-                }
-            }
-
             if (recordDaily){
                 dailyExaustion.set(i, exhaustionDepth);
             }
@@ -1284,6 +1313,16 @@ public class MainWindow extends javax.swing.JFrame {
                         }
                     }
                     stage = duckRound(stage+0.1);
+                }
+            }
+
+            // check to see if the exhaustion depth needs to be updated
+            if ( currentMin == stages.array[i- exhaustionDays] )
+            {
+                currentMin = getMin(stages,i- exhaustionDays +1, exhaustionDays);
+                if ( currentMin > exhaustionDepth)
+                {
+                    exhaustionDepth = currentMin;
                 }
             }
 
