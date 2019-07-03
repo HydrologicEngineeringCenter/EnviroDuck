@@ -983,14 +983,14 @@ public class MainWindow extends javax.swing.JFrame {
 
             // get the window stop time
             tmp = stopDate + (startYear+yearIndex);
-            stopTime = new HecTime(tmp);
-            stopTime.increment(8,60);
 
             if ( QuackYear(partD, tmp) == -1 )
             {
                 tmp = stopDate + (startYear+yearIndex+1);
-                stopTime = new HecTime(tmp);
-                stopTime.increment(8,60);
+                stopTime = new HecTime(tmp, "0800");
+            } else
+            {
+                stopTime = new HecTime(tmp, "0800");
             }
 
             DSSFileManager.ts.setPathname(path);
