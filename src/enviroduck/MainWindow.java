@@ -1266,7 +1266,7 @@ public class MainWindow extends javax.swing.JFrame {
      *  The first exhaustionDays days are not considered in the average.
      *  If recordDaily is set, then daily values are recorded */
 
-    private static double duckRound(double x)
+    private static double RoundToTenth(double x)
     {
         x = Math.round(x * 10) / 10.0;
         return x;
@@ -1278,7 +1278,8 @@ public class MainWindow extends javax.swing.JFrame {
 
         int num = stages.array.length - exhaustionDays;
 
-        // get the inital exaustion depth
+        // the min depth is the minimum stage in the next exhaustion days (next 30 days for example)
+        // when we reach that minimum stage (reset by looking ahead another 30 days for example)
         double currentMin = exhaustionDepth = getMin(stages,0, exhaustionDays);
 
         for(int i = exhaustionDays; i < stages.array.length; ++i )
@@ -1293,8 +1294,8 @@ public class MainWindow extends javax.swing.JFrame {
             double ls = (bottom > exhaustionDepth) ? bottom : exhaustionDepth;
 
             // round the high stage nad low stage to 10th of a foot increments
-            hs = duckRound(hs);
-            ls = duckRound(ls);
+            hs = RoundToTenth(hs);
+            ls = RoundToTenth(ls);
             sum = 0;
 
             // add one to the depletion counter for each band in the range highstage to low stage
@@ -1312,7 +1313,7 @@ public class MainWindow extends javax.swing.JFrame {
                             sum += r.area;
                         }
                     }
-                    stage = duckRound(stage+0.1);
+                    stage = RoundToTenth(stage+0.1);
                 }
             }
 
