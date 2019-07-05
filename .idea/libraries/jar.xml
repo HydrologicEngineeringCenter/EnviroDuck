@@ -1,0 +1,13 @@
+<component name="libraryTable">
+  <library name="jar">
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/jar/hec.jar!/" />
+      <root url="jar://$PROJECT_DIR$/jar/heclib.jar!/" />
+      <root url="jar://$PROJECT_DIR$/jar/rma.jar!/" />
+      <root url="jar://$PROJECT_DIR$/jar/hecData.jar!/" />
+      <root url="jar://$PROJECT_DIR$/jar/lookup.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>
