@@ -1268,8 +1268,7 @@ public class MainWindow extends javax.swing.JFrame {
 
     private static double RoundToTenth(double x)
     {
-        x = Math.round(x * 10) / 10.0;
-        return x;
+        return Math.round(x * 10) / 10.0;
     }
 
     private double getYearFeedingAverage(doubleArrayContainer stages, boolean recordDaily)
@@ -1299,6 +1298,7 @@ public class MainWindow extends javax.swing.JFrame {
             sum = 0;
 
             // add one to the depletion counter for each band in the range highstage to low stage
+            //
             if ( ls < hs )
             {
                 double stage = ls;
@@ -1343,12 +1343,6 @@ public class MainWindow extends javax.swing.JFrame {
      *  Get the average resting acres for ducks in the year of data contained in vals.
      *  The first exhaustionDays days are not considered in the average.
      *  The daily values are recorded */
-
-    /** double getYearRestingAverage2(doubleArrayContainer vals)
-     *
-     *  Get the average resting acres for ducks in the year of data contained in vals.
-     *  The first exhaustionDays days are not considered in the average.
-     *  The daily values are not recorded */
 
     private double getYearRestingAverage(doubleArrayContainer vals, boolean recordDaily)
     {
