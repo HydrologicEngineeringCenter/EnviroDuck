@@ -983,14 +983,14 @@ public class MainWindow extends javax.swing.JFrame {
 
             // get the window stop time
             tmp = stopDate + (startYear+yearIndex);
-            stopTime = new HecTime(tmp);
-            stopTime.increment(8,60);
 
-            if ( stopTime.compareTimes(startTime) == -1 )
+            if ( QuackYear(partD, tmp) == -1 )
             {
                 tmp = stopDate + (startYear+yearIndex+1);
-                stopTime = new HecTime(tmp);
-                stopTime.increment(8,60);
+                stopTime = new HecTime(tmp, "0800");
+            } else
+            {
+                stopTime = new HecTime(tmp, "0800");
             }
 
             DSSFileManager.ts.setPathname(path);
@@ -1022,6 +1022,45 @@ public class MainWindow extends javax.swing.JFrame {
         }
 
         displayResults();
+    }
+
+    private int QuackYear(String startDate, String endDate) {
+        String[] months = {"JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"};
+        int startMonthIndex = -1;
+        int endMonthIndex = -1;
+        String startMonth = startDate.substring(2, 5);
+        String endMonth = endDate.substring(2, 5);
+
+        //Find index of months in month list
+        for (int i = 0; i < months.length; i++)
+        {
+            if (startMonth.equals(months[i]))
+            {
+                startMonthIndex = i;
+                break;
+            }
+        }
+
+        for (int i = 0; i < months.length; i++)
+        {
+            if (endMonth.equals(months[i]))
+            {
+                endMonthIndex = i;
+                break;
+            }
+        }
+
+        if (startMonthIndex == -1 || endMonthIndex == -1)
+        {
+            return -2;
+        }
+        if (startMonthIndex <= endMonthIndex)
+        {
+            return 0;
+        } else
+        {
+            return -1;
+        }
     }
 
     private String GetRecordPath(String partD) {
@@ -1100,7 +1139,7 @@ public class MainWindow extends javax.swing.JFrame {
         }
 
         // get the rearing acres
-        fAvg = getYearFeedingAverage(vals, recordDaily);
+        fAvg =  getYearFeedingAverage(vals, recordDaily);
         //get the spawning acres
         rAvg = getYearRestingAverage(vals, recordDaily);
 
@@ -1227,10 +1266,9 @@ public class MainWindow extends javax.swing.JFrame {
      *  The first exhaustionDays days are not considered in the average.
      *  If recordDaily is set, then daily values are recorded */
 
-    private static double duckRound(double x)
+    private static double RoundToTenth(double x)
     {
-        x = Math.round(x * 10) / 10.0;
-        return x;
+        return Math.round(x * 10) / 10.0;
     }
 
     private double getYearFeedingAverage(doubleArrayContainer stages, boolean recordDaily)
@@ -1239,21 +1277,12 @@ public class MainWindow extends javax.swing.JFrame {
 
         int num = stages.array.length - exhaustionDays;
 
-        // get the inital exaustion depth
+        // the min depth is the minimum stage in the next exhaustion days (next 30 days for example)
+        // when we reach that minimum stage (reset by looking ahead another 30 days for example)
         double currentMin = exhaustionDepth = getMin(stages,0, exhaustionDays);
 
         for(int i = exhaustionDays; i < stages.array.length; ++i )
         {
-            // check to see if the exaustion depth needs to be updated
-            if ( currentMin == stages.array[i- exhaustionDays] )
-            {
-                currentMin = getMin(stages,i- exhaustionDays +1, exhaustionDays);
-                if ( currentMin > exhaustionDepth)
-                {
-                    exhaustionDepth = currentMin;
-                }
-            }
-
             if (recordDaily){
                 dailyExaustion.set(i, exhaustionDepth);
             }
@@ -1264,11 +1293,14 @@ public class MainWindow extends javax.swing.JFrame {
             double ls = (bottom > exhaustionDepth) ? bottom : exhaustionDepth;
 
             // round the high stage nad low stage to 10th of a foot increments
-            hs = duckRound(hs);
-            ls = duckRound(ls);
+            hs = RoundToTenth(hs);
+            ls = RoundToTenth(ls);
             sum = 0;
 
-            // add one to the depletion counter for each band in the range highstage to low stage
+            // if the current low stage is smaller than the current high stage, increment through the low stage
+            // and high stage by tenths, if the stage exists in the area table, add the area of that stage
+            // to the total sum of areas for the current low stage/high stage interval, then update min stage (currentMin)
+            // if needed, and add the accrued sum of area to the total area. Finally, return average area.
             if ( ls < hs )
             {
                 double stage = ls;
@@ -1283,7 +1315,17 @@ public class MainWindow extends javax.swing.JFrame {
                             sum += r.area;
                         }
                     }
-                    stage = duckRound(stage+0.1);
+                    stage = RoundToTenth(stage+0.1);
+                }
+            }
+
+            // check to see if the exhaustion depth needs to be updated
+            if ( currentMin == stages.array[i- exhaustionDays] )
+            {
+                currentMin = getMin(stages,i- exhaustionDays +1, exhaustionDays);
+                if ( currentMin > exhaustionDepth)
+                {
+                    exhaustionDepth = currentMin;
                 }
             }
 
@@ -1303,12 +1345,6 @@ public class MainWindow extends javax.swing.JFrame {
      *  Get the average resting acres for ducks in the year of data contained in vals.
      *  The first exhaustionDays days are not considered in the average.
      *  The daily values are recorded */
-
-    /** double getYearRestingAverage2(doubleArrayContainer vals)
-     *
-     *  Get the average resting acres for ducks in the year of data contained in vals.
-     *  The first exhaustionDays days are not considered in the average.
-     *  The daily values are not recorded */
 
     private double getYearRestingAverage(doubleArrayContainer vals, boolean recordDaily)
     {
