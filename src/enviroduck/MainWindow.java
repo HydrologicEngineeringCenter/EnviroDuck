@@ -1297,8 +1297,10 @@ public class MainWindow extends javax.swing.JFrame {
             ls = RoundToTenth(ls);
             sum = 0;
 
-            // add one to the depletion counter for each band in the range highstage to low stage
-            //
+            // if the current low stage is smaller than the current high stage, increment through the low stage
+            // and high stage by tenths, if the stage exists in the area table, add the area of that stage
+            // to the total sum of areas for the current low stage/high stage interval, then update min stage (currentMin)
+            // if needed, and add the accrued sum of area to the total area. Finally, return average area.
             if ( ls < hs )
             {
                 double stage = ls;
