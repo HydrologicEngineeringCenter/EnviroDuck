@@ -79,7 +79,7 @@ public class MainWindow extends javax.swing.JFrame {
         seasonStopDay = prefs.getInt("Season Stop Day",29);
 
         // Get the days to exaustion
-        exhaustionDays = prefs.getInt("Exaustion Days",30);
+        exhaustionDays = prefs.getInt("Exhaustion Days",30);
 
         // Get the depletion Days
         depletionDays = prefs.getInt("DepletionDays",120);
@@ -442,7 +442,7 @@ public class MainWindow extends javax.swing.JFrame {
         jPanel3.add(jDurField);
         jDurField.setBounds(100, 20, 30, 21);
 
-        jLabel5.setText("Exaustion Days");
+        jLabel5.setText("Exhaustion Days");
         jPanel3.add(jLabel5);
         jLabel5.setBounds(10, 20, 90, 14);
 
@@ -629,7 +629,7 @@ public class MainWindow extends javax.swing.JFrame {
             exhaustionDays = i.intValue();
         }
 
-        prefs.putInt("Exaustion Days", exhaustionDays);
+        prefs.putInt("Exhaustion Days", exhaustionDays);
     }//GEN-LAST:event_jDurFieldActionPerformed
 
     /** This opens a dialog box alowing a new time window to be selected */
@@ -714,7 +714,7 @@ public class MainWindow extends javax.swing.JFrame {
             Integer i = (Integer) jDurField.getValue();
             exhaustionDays = i.intValue();
         }
-        prefs.putInt("Exaustion Days", exhaustionDays);
+        prefs.putInt("Exhaustion Days", exhaustionDays);
 
         int firstYear = Integer.parseInt(jStartText.getText());
         int lastYear = Integer.parseInt(jStopText.getText());
@@ -1507,8 +1507,8 @@ public class MainWindow extends javax.swing.JFrame {
 
         buffer.append("Time Window:\t");
         buffer.append(jSeasonField.getText() + "\n");
-        buffer.append("Days untill Exaustion : " + exhaustionDays + " Days\n");
-        buffer.append("Days untill Depletion : " + depletionDays + " Days\n");
+        buffer.append("Days until Exhaustion : " + exhaustionDays + " Days\n");
+        buffer.append("Days until Depletion : " + depletionDays + " Days\n");
 
         buffer.append("\n\n");
 
@@ -1628,11 +1628,11 @@ public class MainWindow extends javax.swing.JFrame {
 
         dBuffer.append("Time Window:\t");
         dBuffer.append(jSeasonField.getText() + "\n");
-        dBuffer.append("Days until Exaustion: " + exhaustionDays + " Days\n");
+        dBuffer.append("Days until Exhaustion: " + exhaustionDays + " Days\n");
         dBuffer.append("Max Rearing Depth: " + maxDepth + " Feet\n");
         dBuffer.append("\n\n");
 
-        dBuffer.append("Year\tStage (ft)\tFeeding (cal)\tResting (hrs)\tExaustion Stage\n");
+        dBuffer.append("Year\tStage\tFeeding\tResting\tExhaustion Stage\n");
     }
 
     /** void appendResultsToDailyReport()
