@@ -1,0 +1,63 @@
+For waterfowl analysis the flooded areas are on the 2 yr. Frequency lands and below.
+
+For  fishery analysis the lands for fishery is normally limit to 1 mile from the permanent body of water or 
+stream.
+
+
+ ENVIRONMENTAL PROGRAMS
+DOCUMENTATION.
+
+The Enviromental Programs consist of two separate programs with similar output.  The programs are found 
+under the Qualifier : N:\Pro
+
+Env-Fish.Exe  - For Aquatics.
+Env-Duck.exe  - For Water Fowl.
+
+To Execute the programs enter the following at the command line:
+
+--Env-Fish D=<1> I=<2> O=<3> Option=<4>
+--Env-Duck D=<1> I=<2> O=<3> Option=<4>
+
+Where :
+ 1. Is the name of the DSS database from which to extract the stage & acres data.
+ 2. Is the name of the Input file from which to read the dates, duration, water depth & pathnames.
+    depth, & Pathnames.
+ 3. Is the name of the Output file in which to store the averages & totals.
+ 4. Is the Option to have the (1) data printed out by day for each year.
+                              (2) total data for each year only.
+
+Input File Data: 
+
+01NOV 28FEB       *Beginning & Ending Date of Seasonal Analysis.
+005 99.9  0.5        *Fish Program(Env-Fish) -
+                                     Minimum Number of Days for Spawning Habitat &  max & min Water Depth.
+                              *Duck Program(Env-Duck) -  120 1.5  30
+                                      Maximum number of Days Food Source Can Be Flooded &  Maximum Water  
+                                      Depth,  NO. days to exhaustion of food source flooded at or below the max water
+                                      depth
+1963 1992         *Beginning & Ending Years for Seasonal Analysis.
+/A/B/C/D/E/F/     *Stage Pathname.
+/A/B/C/D/E/F/     *Acres Pathname.
+
+ Example Input file: (b is equal to a Blank Space)
+
+01NOV 28FEB                    Format(A5,1X,A5)
+120 1.5 120                      Format(I3,1X,F8.2) - 005 99.9 or bb5 99.9
+1963 1992                      Format(A4,1X,A4)
+/BIG SUNFLOWER/ANGUILLA/STAGE//1DAY/INT/             Format(A80)
+/BIG SUNFLOWER/ANGUILLA/ACRES//1DAY/existing 2YR/    Format(A80)
+/BIG SUNFLOWER/HOLLY BLUFF/STAGE//1DAY/INT/
+/BIG SUNFLOWER/HOLLY BLUFF/ACRES//1DAY/existing 2YR/
+/BIG SUNFLOWER/LITTLE CALLAO/STAGE//1DAY/INT/
+/BIG SUNFLOWER/LITTLE CALLAO/ACRES//1DAY/existing 2YR/
+
+
+
+Important Note in Reference to the Months(Line 1):
+
+The Env-Fish program is setup to be ran within the same year  (Ex. 01Mar 30Jun).
+The Env-Duck program is setup to be ran within two separate years
+    (Ex. 01Nov 28Feb)
+date: 25Aug94
+egl
+

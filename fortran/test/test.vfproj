@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<VisualStudioProject ProjectCreator="Intel Fortran" Keyword="Console Application" Version="11.0" ProjectIdGuid="{DDEE0E03-59C3-4FC8-8DAC-28AB1C3013F5}">
+	<Platforms>
+		<Platform Name="Win32"/>
+		<Platform Name="x64"/></Platforms>
+	<Configurations>
+		<Configuration Name="Debug|Win32">
+				<Tool Name="VFFortranCompilerTool" SuppressStartupBanner="true" DebugInformationFormat="debugEnabled" Optimization="optimizeDisabled" WarnInterfaces="true" ExternalNameInterpretation="extNameLowerCase" CallingConvention="callConventionCRef" ExternalNameUnderscore="true" Traceback="true" BoundsCheck="true" StackFrameCheck="true" RuntimeLibrary="rtMultiThreadedDebugDLL"/>
+				<Tool Name="VFLinkerTool" LinkIncremental="linkIncrementalNo" SuppressStartupBanner="true" AdditionalLibraryDirectories="..\" GenerateDebugInformation="true" SubSystem="subSystemConsole" AdditionalDependencies="heclib_c_v6v7.lib heclib_f_v6v7.lib"/>
+				<Tool Name="VFResourceCompilerTool"/>
+				<Tool Name="VFMidlTool" SuppressStartupBanner="true"/>
+				<Tool Name="VFCustomBuildTool"/>
+				<Tool Name="VFPreLinkEventTool"/>
+				<Tool Name="VFPreBuildEventTool"/>
+				<Tool Name="VFPostBuildEventTool"/>
+				<Tool Name="VFManifestTool" SuppressStartupBanner="true"/></Configuration>
+		<Configuration Name="Release|Win32">
+				<Tool Name="VFFortranCompilerTool" SuppressStartupBanner="true" ExternalNameInterpretation="extNameLowerCase" CallingConvention="callConventionCRef" ExternalNameUnderscore="true" RuntimeLibrary="rtMultiThreadedDLL"/>
+				<Tool Name="VFLinkerTool" LinkIncremental="linkIncrementalNo" SuppressStartupBanner="true" AdditionalLibraryDirectories="..\" SubSystem="subSystemConsole" AdditionalDependencies="heclib_c_v6v7.lib heclib_f_v6v7.lib"/>
+				<Tool Name="VFResourceCompilerTool"/>
+				<Tool Name="VFMidlTool" SuppressStartupBanner="true"/>
+				<Tool Name="VFCustomBuildTool"/>
+				<Tool Name="VFPreLinkEventTool"/>
+				<Tool Name="VFPreBuildEventTool"/>
+				<Tool Name="VFPostBuildEventTool"/>
+				<Tool Name="VFManifestTool" SuppressStartupBanner="true"/></Configuration>
+		<Configuration Name="Debug|x64">
+				<Tool Name="VFFortranCompilerTool" SuppressStartupBanner="true" DebugInformationFormat="debugEnabled" Optimization="optimizeDisabled" WarnInterfaces="true" ExternalNameInterpretation="extNameLowerCase" CallingConvention="callConventionCRef" ExternalNameUnderscore="true" Traceback="true" BoundsCheck="true" StackFrameCheck="true" RuntimeLibrary="rtMultiThreadedDebug"/>
+				<Tool Name="VFLinkerTool" LinkIncremental="linkIncrementalNo" SuppressStartupBanner="true" AdditionalLibraryDirectories="..\" GenerateDebugInformation="true" SubSystem="subSystemConsole" AdditionalDependencies="heclib_c_v6v7.lib heclib_f_v6v7.lib"/>
+				<Tool Name="VFResourceCompilerTool"/>
+				<Tool Name="VFMidlTool" SuppressStartupBanner="true" TargetEnvironment="midlTargetAMD64"/>
+				<Tool Name="VFCustomBuildTool"/>
+				<Tool Name="VFPreLinkEventTool"/>
+				<Tool Name="VFPreBuildEventTool"/>
+				<Tool Name="VFPostBuildEventTool"/>
+				<Tool Name="VFManifestTool" SuppressStartupBanner="true"/></Configuration>
+		<Configuration Name="Release|x64">
+				<Tool Name="VFFortranCompilerTool" SuppressStartupBanner="true" ExternalNameInterpretation="extNameLowerCase" CallingConvention="callConventionCRef" ExternalNameUnderscore="true" RuntimeLibrary="rtMultiThreadedDLL"/>
+				<Tool Name="VFLinkerTool" LinkIncremental="linkIncrementalNo" SuppressStartupBanner="true" AdditionalLibraryDirectories="..\" SubSystem="subSystemConsole" AdditionalDependencies="heclib_c_v6v7.lib heclib_f_v6v7.lib"/>
+				<Tool Name="VFResourceCompilerTool"/>
+				<Tool Name="VFMidlTool" SuppressStartupBanner="true" TargetEnvironment="midlTargetAMD64"/>
+				<Tool Name="VFCustomBuildTool"/>
+				<Tool Name="VFPreLinkEventTool"/>
+				<Tool Name="VFPreBuildEventTool"/>
+				<Tool Name="VFPostBuildEventTool"/>
+				<Tool Name="VFManifestTool" SuppressStartupBanner="true"/></Configuration></Configurations>
+	<Files>
+		<Filter Name="Header Files" Filter="fi;fd;h;inc"/>
+		<Filter Name="Resource Files" Filter="rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe"/>
+		<Filter Name="Source Files" Filter="f90;for;f;fpp;ftn;def;odl;idl">
+		<File RelativePath="..\ENV-DUCK.FOR"/></Filter></Files>
+	<Globals/></VisualStudioProject>
