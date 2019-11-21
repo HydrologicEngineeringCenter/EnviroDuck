@@ -3,6 +3,8 @@ import java.util.*;
 
 public class AreaCalculator {
 
+    private static final double MISSING=-998877.0;
+
     public AreaCalculator(double[] x, double[] y)
     {
         this.rawStage = x;
@@ -10,30 +12,30 @@ public class AreaCalculator {
         makeIncrementalStageAndArea();
     }
 
-    private double FindArea(double[] xvals, double[] yvals, double num)
+    public double lookupArea(double stage)
     {
 
-        if (xvals.length == 0 || num < Math.floor(xvals[0]) || num > Math.ceil(xvals[xvals.length - 1]))
+        if (rawStage.length == 0 || stage < Math.floor(rawStage[0]) || stage > Math.ceil(rawStage[rawStage.length - 1]))
         {
-            return -1;
+            return MISSING;
         }
 
-        double interpolateVal = Interpolate(xvals, yvals, num);
-        if (interpolateVal == -1.0)
+        double interpolateVal = Interpolate(rawStage, rawArea, stage);
+        if (interpolateVal == MISSING)
         {
-            if (num >= Math.round(xvals[xvals.length - 1] * 10) / 10.0)
+            if (stage >= Math.round(rawStage[rawStage.length - 1] * 10) / 10.0)
             {
-                return Extrapolate(xvals, yvals, num, xvals.length - 2, xvals.length - 1);
+                return Extrapolate(rawStage, rawArea, stage, rawStage.length - 2, rawStage.length - 1);
             } else
             {
-                return Extrapolate(xvals, yvals, num, 0, 1);
+                return Extrapolate(rawStage, rawArea, stage, 0, 1);
             }
         }
 
         return interpolateVal;
     }
 
-    double Interpolate(double[] xvals, double[] yvals, double num)
+    private static double Interpolate(double[] xvals, double[] yvals, double num)
     {
         for (int i = 0; i < xvals.length - 1; i++)
         {
@@ -50,10 +52,10 @@ public class AreaCalculator {
             }
         }
 
-        return -1.0;
+        return MISSING;
     }
 
-    double Extrapolate(double[] xvals, double[] yvals, double num, int indexUpper, int indexLower)
+    private static double Extrapolate(double[] xvals, double[] yvals, double num, int indexUpper, int indexLower)
     {
         double x1 = Math.round(xvals[indexLower] * 10) / 10.0;
         double x2 = Math.round(xvals[indexUpper] * 10) / 10.0;
@@ -65,12 +67,12 @@ public class AreaCalculator {
         return rval;
     }
 
-    void makeIncrementalStageAndArea()
+    private void makeIncrementalStageAndArea()
     {
         for (double x = Math.floor(rawStage[0]); x < Math.ceil(rawStage[rawStage.length - 1]); x = Math.round((x + 0.1) * 10) / 10.0)
         {
-            double area2 = FindArea(rawStage, rawArea, x + 0.1);
-            double area1 =  FindArea(rawStage, rawArea, x);
+            double area2 = lookupArea( x + 0.1);
+            double area1 =  lookupArea( x);
             double diff = area2 - area1;
 
             incrementalStage.add(x);
@@ -78,19 +80,19 @@ public class AreaCalculator {
         }
     }
 
-    double getMin()
+    private double getMin()
     {
         return Math.floor(incrementalStage.get(0));
     }
 
-    double getMax()
+    private double getMax()
     {
         return Math.ceil(incrementalStage.get(incrementalStage.size() - 1));
     }
 
     private double rawStage[];
     private double rawArea[];
-    public List<Double> incrementalStage = new ArrayList<Double>();
-    public List<Double> incrementalArea = new ArrayList<Double>();
+     List<Double> incrementalStage = new ArrayList<Double>();
+     List<Double> incrementalArea = new ArrayList<Double>();
 
 }

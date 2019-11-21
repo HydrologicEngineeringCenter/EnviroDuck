@@ -1,4 +1,13 @@
-
+      logical function IsMissing(x)
+       implicit none
+       real x,missing
+       missing = -3.402823466e+38
+       IsMissing = .false.
+       if ( x.eq.missing) IsMissing = .true.
+       if (x.eq.-901.00.OR.x.EQ.-902.00) IsMissing = .true.
+      end function
+      
+      program ENVDUCK
 C     / the following allows for screen manipulation as in color changes.
 C     / utilizing microsoft fortran commands.(ADVANCED TOPICS)
 C     / it utilizes setbkcolor, settextcolor, setvideoconfig, outtext
@@ -33,8 +42,11 @@ C     A4,1X,A4
 C     A80
 C     A80
 C
-C
+      
+   
+      
       integer IFLTAB(20000), IFFTAB(20000)
+      logical IsMissing
       real  STAGES(0:20000), ACRES(0:20000),
      .     XACRES(0:400), CDEPTH(0:400), DEPTH(0:400), AVG1, AVG2, AVG3, AVG4,
      .     WTRDEPTH, WFTEST, SUBTRAC, STORE(0:20000), TOTALWF,
@@ -118,7 +130,7 @@ C
          CALL DATJUL(DATE1,JUL1,ISTAT)
          DURDIFF=(JUL1-DURATION)+1
 C
-       CTIME='0100'
+       CTIME='0800'
 C
        DO 41 N=1,NOYEARS-1
 C
@@ -185,7 +197,8 @@ C
          IF(M.LT.DURATION)THEN
             GOTO 200
          ENDIF
-         IF(ACRES(M).EQ.-901.00.OR.ACRES(M).EQ.-902.00)THEN
+!         IF(ACRES(M).EQ.-901.00.OR.ACRES(M).EQ.-902.00)THEN
+         IF(IsMissing(ACRES(M))) THEN
           GOTO 200
          ENDIF
         ORCNT=ORCNT+1
@@ -197,7 +210,8 @@ C
        IF(J.LT.DURATION)THEN
          GOTO 600
        ENDIF
-       IF(ACRES(J).EQ.-901.00.OR.ACRES(J).EQ.-902.00)THEN
+!       IF(ACRES(J).EQ.-901.00.OR.ACRES(J).EQ.-902.00)THEN
+       IF(IsMissing(ACRES(J)))THEN
          GOTO 600
        ENDIF
       YEARACRE=YEARACRE+ACRES(J)
@@ -302,7 +316,7 @@ C
          GOTO 501
       ENDIF
 C
-      WRITE(4,'(A9,2X,F8.2,1X,F10.2,2X,F10.2,2X,F10.2,2X,F10.2)')
+      WRITE(4,'(A9,2X,F8.1,1X,F10.1,2X,F10.1,2X,F10.1,2X,F10.1)')
      . CDATE,ACRES(DURCNT),WFACRE,DEEPACRE,DURACRE,FACRES
 C
 501   IF(DURCNT.EQ.NVALS)THEN

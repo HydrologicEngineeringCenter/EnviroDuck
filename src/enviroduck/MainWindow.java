@@ -1078,10 +1078,10 @@ public class MainWindow extends javax.swing.JFrame {
     }
 
     /** makeAreaTable
-     *  Use the stage area table to construct an area incrment map.
-     *  This will hold the number of new accres flooded in 1/10 of a foot
+     *  Use the stage area table to construct an area increment map.
+     *  This will hold the number of new acres flooded in 1/10 of a foot
      *  increments. For example the mapped value for 90 is the number of
-     *  acres that flood when the stage moevs from 90 feet tp 90.1 feet */
+     *  acres that flood when the stage moves from 90 feet tp 90.1 feet */
 
     void makeAreaTable()
     {
@@ -1089,13 +1089,15 @@ public class MainWindow extends javax.swing.JFrame {
 
         for (int i = 0; i < calculator.incrementalStage.size(); i++)
         {
-            areaTable.put(calculator.incrementalStage.get(i), new TableRec(calculator.incrementalArea.get(i), 0));
+            double stage =calculator.incrementalStage.get(i);
+            double incrementalArea = calculator.incrementalArea.get(i);
+            areaTable.put(stage, new TableRec(incrementalArea, 0));
         }
     }
 
     /** clearAreaTable()
      *
-     * Reset the depletion counters in the area incrment table
+     * Reset the depletion counters in the area increment table
      */
 
     private void clearAreaTable()
@@ -1174,7 +1176,7 @@ public class MainWindow extends javax.swing.JFrame {
 
     /** getWindowBeginStr()
      *
-     * Return the string representation of the begining of the season */
+     * Return the string representation of the beginning of the season */
 
     private String getWindowBeginStr()
     {
@@ -1313,6 +1315,10 @@ public class MainWindow extends javax.swing.JFrame {
                         {
                             r.count++;
                             sum += r.area;
+                        }
+                        else
+                        {
+                            System.out.println("oops");
                         }
                     }
                     stage = RoundToTenth(stage+0.1);
@@ -1485,7 +1491,7 @@ public class MainWindow extends javax.swing.JFrame {
 
     /** void displayResults()
      *
-     * Write the yearly avearge table into a string buffer,
+     * Write the yearly average table into a string buffer,
      * display the buffer and write the buffer to file, whose name
      * is derieved form the selected gage and stage area curve */
 
@@ -1637,8 +1643,8 @@ public class MainWindow extends javax.swing.JFrame {
 
     /** void appendResultsToDailyReport()
      *
-     * This function saves the dailly values for the current year to a buffer
-     * the buffer is diplayed with displayDailyResults */
+     * This function saves the daily values for the current year to a buffer
+     * the buffer is displayed with displayDailyResults */
 
     private void appendResultsToDailyReport()
     {
