@@ -7,7 +7,8 @@ import hec.hecmath.DSS;
 
 public class DSSFile
 {
-    public DSSFile(java.io.File lastFile, String[] stageDataStr, javax.swing.JTable jStageTable, javax.swing.table.DefaultTableModel stagePathsModel)
+    public DSSFile(java.io.File lastFile, String[] stageDataStr, javax.swing.JTable jStageTable,
+                   javax.swing.table.DefaultTableModel stagePathsModel)
     {
         this.lastFile = lastFile;
         this.stageDataStr = stageDataStr;

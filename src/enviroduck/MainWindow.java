@@ -7,7 +7,7 @@ package enviroduck;
 
 /**
  * @author  b4edhdwj
- */
+ **/
 
 import hec.heclib.dss.*;
 import hec.heclib.util.*;
@@ -37,7 +37,7 @@ public class MainWindow extends javax.swing.JFrame {
 
     public void finalize() throws Throwable
     {
-        DSSFileManager.closeDSSFile();
+        dssFile.closeDSSFile();
 
         super.finalize();
     }
@@ -91,10 +91,7 @@ public class MainWindow extends javax.swing.JFrame {
         // force the stage area stings to update
         if (fileLoaded)
         {
-            DSSFileManager = new DSSFile(lastFile, stageDataStr, jStageTable, stagePathsModel);
-            DSSFileManager.loadDSSFile();
-            DSSFileManager.CreateStageDataStrings();
-            //loadDSSFile();
+            readDSS();
         }
     }
 
@@ -565,7 +562,7 @@ public class MainWindow extends javax.swing.JFrame {
         // if the data selection strings changed reload the DSS File
         if ( s1.equals(stageDataStrings) == false )
         {
-            DSSFileManager.loadDSSFile();
+            dssFile.loadDSSFile();
             //loadDSSFile();
         }
         else
@@ -791,7 +788,7 @@ public class MainWindow extends javax.swing.JFrame {
             for(int k = 0; k < stageAreaStr.length; ++k)
             {
                 // search the Catalog for matches
-                CondensedReference[] cr = DSSFileManager.pd.getCondensedCatalog("/*/"+stagePathsModel.getValueAt(idx,1)+"/"+stageAreaStr[k]+"/*/*/*/");
+                CondensedReference[] cr = dssFile.pd.getCondensedCatalog("/*/"+stagePathsModel.getValueAt(idx,1)+"/"+stageAreaStr[k]+"/*/*/*/");
 
                 // display each stage area curve on a row
                 for(int j = 0; j < cr.length; ++j)
@@ -831,7 +828,7 @@ public class MainWindow extends javax.swing.JFrame {
         {
             // retrieve the stage area path from the selected row
             int selectedRow = lsm.getMinSelectionIndex();
-            DSSFileManager.pd.setPathname(  "/" + (String) areaPathsModel.getValueAt(selectedRow, 0) +
+            dssFile.pd.setPathname(  "/" + (String) areaPathsModel.getValueAt(selectedRow, 0) +
                     "/" + (String) areaPathsModel.getValueAt(selectedRow, 1) +
                     "/" + (String) areaPathsModel.getValueAt(selectedRow, 2) +
                     "/" + (String) areaPathsModel.getValueAt(selectedRow, 3) +
@@ -911,10 +908,7 @@ public class MainWindow extends javax.swing.JFrame {
                 jDSSFilename.setText( lastFile.getAbsolutePath());
 
                 prefs.put("Last DSS File Opened",lastFile.getAbsolutePath()); // record the last file opened so we can brose to its directory at the next request
-                DSSFileManager = new DSSFile(lastFile, stageDataStr, jStageTable, stagePathsModel);
-                DSSFileManager.loadDSSFile();
-                DSSFileManager.CreateStageDataStrings();
-                //loadDSSFile();
+                readDSS();
             }
             else
             {
@@ -928,6 +922,12 @@ public class MainWindow extends javax.swing.JFrame {
 
         }
     }//GEN-LAST:event_actionPerformed
+
+    private void readDSS() {
+        dssFile = new DSSFile(lastFile, stageDataStr, jStageTable, stagePathsModel);
+        dssFile.loadDSSFile();
+        dssFile.CreateStageDataStrings();
+    }
 
     /**
      * run model on the time period indicated in the text boxes
@@ -943,7 +943,7 @@ public class MainWindow extends javax.swing.JFrame {
         //read the stage area curve
         int size = stopYear-startYear+1;
         stageAreaCurve = new PairedDataContainer();
-        int rv = DSSFileManager.pd.read(stageAreaCurve);
+        int rv = dssFile.pd.read(stageAreaCurve);
 
         calculator = new AreaCalculator(stageAreaCurve.xOrdinates, stageAreaCurve.yOrdinates[0]);
 
@@ -993,9 +993,9 @@ public class MainWindow extends javax.swing.JFrame {
                 stopTime = new HecTime(tmp, "0800");
             }
 
-            DSSFileManager.ts.setPathname(path);
+            dssFile.ts.setPathname(path);
 
-            DSSFileManager.ts.setTimeWindow(startTime,stopTime);
+            dssFile.ts.setTimeWindow(startTime,stopTime);
 
             if ( recordDaily && yearIndex == 0 )
             {
@@ -1123,11 +1123,11 @@ public class MainWindow extends javax.swing.JFrame {
 
         if (recordDaily == false)
         {
-            rv = DSSFileManager.ts.read(vals);
+            rv = dssFile.ts.read(vals);
         } else
         {
             dailyTime = new HecTimeArray();
-            rv = DSSFileManager.ts.read(dailyTime, vals);
+            rv = dssFile.ts.read(dailyTime, vals);
         }
 
         if( rv < 0) {
@@ -1500,15 +1500,15 @@ public class MainWindow extends javax.swing.JFrame {
         StringBuffer buffer = new StringBuffer();
 
         buffer.append("DSS File:\t");
-        buffer.append(DSSFileManager.ts.DSSFileName());
+        buffer.append(dssFile.ts.DSSFileName());
         buffer.append("\n");
 
         buffer.append("Stage Elevatopn Path:\t");
-        buffer.append(DSSFileManager.ts.pathname());
+        buffer.append(dssFile.ts.pathname());
         buffer.append("\n");
 
         buffer.append("Stage Area Path:\t");
-        buffer.append(DSSFileManager.pd.pathname());
+        buffer.append(dssFile.pd.pathname());
         buffer.append("\n");
 
         buffer.append("Time Window:\t");
@@ -1548,7 +1548,7 @@ public class MainWindow extends javax.swing.JFrame {
         buffer.append(yearRestingArea.average().string(1,true));
         buffer.append("\n");
 
-        String fileName =  DSSFileManager.ts.aPart() + "_" + DSSFileManager.ts.bPart() + "_" + DSSFileManager.ts.fPart();
+        String fileName =  dssFile.ts.aPart() + "_" + dssFile.ts.bPart() + "_" + dssFile.ts.fPart();
         fileName += ".evd";
         String filePath = outputDirPath + "/" + fileName;
         try
@@ -1614,22 +1614,22 @@ public class MainWindow extends javax.swing.JFrame {
     /** void initYearBuffer()
      *
      * This function is misnamed it should be initDaily Buffer.
-     * The function initalises the buffer that holds the dailly
+     * The function initialises the buffer that holds the daily
      * calculations for each year */
 
     private void initYearBuffer()
     {
         dBuffer = new StringBuffer();
         dBuffer.append("DSS File:\t");
-        dBuffer.append(DSSFileManager.ts.DSSFileName());
+        dBuffer.append(dssFile.ts.DSSFileName());
         dBuffer.append("\n");
 
-        dBuffer.append("Stage Elevatopn Path:\t");
-        dBuffer.append(DSSFileManager.ts.pathname());
+        dBuffer.append("Stage Elevation Path:\t");
+        dBuffer.append(dssFile.ts.pathname());
         dBuffer.append("\n");
 
         dBuffer.append("Stage Area Path:\t");
-        dBuffer.append(DSSFileManager.pd.pathname());
+        dBuffer.append(dssFile.pd.pathname());
         dBuffer.append("\n");
 
         dBuffer.append("Time Window:\t");
@@ -1649,7 +1649,8 @@ public class MainWindow extends javax.swing.JFrame {
     private void appendResultsToDailyReport()
     {
 
-        for(int i = 0; i < dailyTime.getIntArray().length; ++i )
+         int size = dailyTime.numberElements();
+        for(int i = 0; i < size; ++i )
         {
             dBuffer.append( dailyTime.element(i).month() + "/"  +
                     dailyTime.element(i).day() + "/"  +
@@ -1809,7 +1810,7 @@ public class MainWindow extends javax.swing.JFrame {
 
     private java.util.HashMap<Double,TableRec> areaTable;
     private AreaCalculator calculator;
-    private DSSFile DSSFileManager;
+    private DSSFile dssFile;
 
     javax.swing.text.NumberFormatter df;
     javax.swing.text.NumberFormatter df2;
