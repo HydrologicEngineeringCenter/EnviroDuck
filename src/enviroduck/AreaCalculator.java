@@ -4,11 +4,18 @@ import java.util.*;
 public class AreaCalculator {
 
     private static final double MISSING=-998877.0;
+    private double rawStage[];
+    private double rawArea[];
+    ArrayList<Double> incrementalStage ;
+    ArrayList<Double> incrementalArea;
 
     public AreaCalculator(double[] x, double[] y)
     {
         this.rawStage = x;
         this.rawArea = y;
+        incrementalStage = new ArrayList<Double>();
+        incrementalArea = new ArrayList<Double>();
+
         makeIncrementalStageAndArea();
     }
 
@@ -90,9 +97,27 @@ public class AreaCalculator {
         return Math.ceil(incrementalStage.get(incrementalStage.size() - 1));
     }
 
-    private double rawStage[];
-    private double rawArea[];
-     List<Double> incrementalStage = new ArrayList<Double>();
-     List<Double> incrementalArea = new ArrayList<Double>();
+
+
+    /** makeAreaTable
+     *  Use the stage area table to construct an area increment map.
+     *  This will hold the number of new acres flooded in 1/10 of a foot
+     *  increments. For example the mapped value for 90 is the number of
+     *  acres that flood when the stage moves from 90 feet tp 90.1 feet */
+
+    java.util.HashMap<Double, AreaCounter> makeAreaTable()
+    {
+        java.util.HashMap<Double, AreaCounter> areaTable =
+                new java.util.HashMap<Double, AreaCounter>();
+
+        for (int i = 0; i < incrementalStage.size(); i++)
+        {
+            double stage =incrementalStage.get(i);
+            double area = incrementalArea.get(i);
+            areaTable.put(stage, new AreaCounter(area, 0));
+        }
+        return areaTable;
+    }
+
 
 }

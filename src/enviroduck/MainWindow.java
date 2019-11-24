@@ -962,7 +962,7 @@ public class MainWindow extends javax.swing.JFrame {
                     javax.swing.JOptionPane.ERROR_MESSAGE);
         }
 
-        makeAreaTable();
+        areaTable = calculator.makeAreaTable();
 
         years = new intArrayContainer(size);
         yearFeedingArea = new HecDoubleArray(size);
@@ -1077,23 +1077,6 @@ public class MainWindow extends javax.swing.JFrame {
         return path;
     }
 
-    /** makeAreaTable
-     *  Use the stage area table to construct an area increment map.
-     *  This will hold the number of new acres flooded in 1/10 of a foot
-     *  increments. For example the mapped value for 90 is the number of
-     *  acres that flood when the stage moves from 90 feet tp 90.1 feet */
-
-    void makeAreaTable()
-    {
-        areaTable = new java.util.HashMap<Double,TableRec>((int)((stageAreaCurve.xOrdinates.length*10+1)/0.75),0.75f);
-
-        for (int i = 0; i < calculator.incrementalStage.size(); i++)
-        {
-            double stage =calculator.incrementalStage.get(i);
-            double incrementalArea = calculator.incrementalArea.get(i);
-            areaTable.put(stage, new TableRec(incrementalArea, 0));
-        }
-    }
 
     /** clearAreaTable()
      *
@@ -1106,7 +1089,7 @@ public class MainWindow extends javax.swing.JFrame {
 
         while( iter.hasNext() )
         {
-            TableRec r = (TableRec) iter.next();
+            AreaCounter r = (AreaCounter) iter.next();
             r.count = 0;
         }
     }
@@ -1310,7 +1293,7 @@ public class MainWindow extends javax.swing.JFrame {
                 {
                     if ( ls <= stage && stage < hs)
                     {
-                        TableRec r = areaTable.get(stage);
+                        AreaCounter r = areaTable.get(stage);
                         if (r != null && r.count < depletionDays)
                         {
                             r.count++;
@@ -1794,21 +1777,8 @@ public class MainWindow extends javax.swing.JFrame {
     private double tAvg;
     private double stageAvg;
 
-    private class TableRec extends Object
-    {
-        public TableRec(double a, int c)
-        {
-            area = a;
-            count = c;
-        }
 
-        public String toString() { return "{area: " + area + " count: " + count + "}"; }
-
-        public double area;
-        public int count;
-    }
-
-    private java.util.HashMap<Double,TableRec> areaTable;
+    private java.util.HashMap<Double, AreaCounter> areaTable;
     private AreaCalculator calculator;
     private DSSFile dssFile;
 
