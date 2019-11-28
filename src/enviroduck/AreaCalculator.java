@@ -1,4 +1,8 @@
 package enviroduck;
+import hec.io.PairedDataContainer;
+import hec.io.PairedDataContainerVertDatum;
+import hec.io.TimeSeriesContainer;
+
 import java.util.*;
 
 public class AreaCalculator {
@@ -9,10 +13,10 @@ public class AreaCalculator {
     ArrayList<Double> incrementalStage ;
     ArrayList<Double> incrementalArea;
 
-    public AreaCalculator(double[] x, double[] y)
+    public AreaCalculator(PairedDataContainer ratingTable, TimeSeriesContainer tsc)
     {
-        this.rawStage = x;
-        this.rawArea = y;
+        this.rawStage = ratingTable.xOrdinates;
+        this.rawArea = ratingTable.yOrdinates[0];
         incrementalStage = new ArrayList<Double>();
         incrementalArea = new ArrayList<Double>();
 

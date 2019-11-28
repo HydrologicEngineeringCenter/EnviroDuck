@@ -11,9 +11,10 @@ package enviroduck;
 
 import hec.heclib.dss.*;
 import hec.heclib.util.*;
-import hec.io.*;             // Has TimeSeriesContainer
+import hec.io.*;
 
 import java.text.DateFormatSymbols;
+import java.util.Arrays;
 import java.util.prefs.*;
 
 
@@ -32,16 +33,6 @@ public class MainWindow extends javax.swing.JFrame {
         initComponents();
     }
 
-    /** void finalize()
-     *
-     * cleanup the MainWindow on program exit */
-
-    public void finalize() throws Throwable
-    {
-        dssFile.closeDSSFile();
-
-        super.finalize();
-    }
 
     /** void init()
      *
@@ -936,35 +927,20 @@ public class MainWindow extends javax.swing.JFrame {
 
     private void runRange(int startYear, int stopYear, String startDate, String stopDate)
     {
-        String path;
-        String tmp;
-        HecTime startTime;
-        HecTime stopTime;
-
         //read the stage area curve
-        int size = stopYear-startYear+1;
+
         stageAreaCurve = new PairedDataContainer();
         int rv = dssFile.pd.read(stageAreaCurve);
 
-        calculator = new AreaCalculator(stageAreaCurve.xOrdinates, stageAreaCurve.yOrdinates[0]);
-
-        if ( rv == -2)
-        {
-            javax.swing.JOptionPane.showMessageDialog(this,
-                    "No dat found in Stage Area Curve",
-                    "Missing Data",
-                    javax.swing.JOptionPane.ERROR_MESSAGE);
+        if( rv !=0) {
+            DisplayErrorMessage(rv);
+            return;
         }
-        else if ( rv == - 3)
-        {
-            javax.swing.JOptionPane.showMessageDialog(this,
-                    "Could not read Stage Area Curve",
-                    "Corrupt DSS File",
-                    javax.swing.JOptionPane.ERROR_MESSAGE);
-        }
+        TimeSeriesContainer c = new TimeSeriesContainer();
+        calculator = new AreaCalculator(stageAreaCurve,c);
 
         areaTable = calculator.makeAreaTable();
-
+        int size = stopYear-startYear+1;
         years = new intArrayContainer(size);
         yearFeedingArea = new HecDoubleArray(size);
         yearRestingArea = new HecDoubleArray(size);
@@ -972,33 +948,9 @@ public class MainWindow extends javax.swing.JFrame {
 
         for(int yearIndex = 0; yearIndex < size; ++yearIndex )
         {
-            String partD = startDate + (startYear+yearIndex);
-            path = GetRecordPath(partD);
+            SetupDatesForTimeSeries(startYear, startDate, stopDate, yearIndex);
 
-            // get the window start time
-            startTime = new HecTime(partD);
-            // set the time to 8 am
-            startTime.increment(8,60);
-            // set the window back exhaustionDays days
-            startTime.increment(-exhaustionDays,1440);
-
-            // get the window stop time
-            tmp = stopDate + (startYear+yearIndex);
-
-            if ( QuackYear(partD, tmp) == -1 )
-            {
-                tmp = stopDate + (startYear+yearIndex+1);
-                stopTime = new HecTime(tmp, "0800");
-            } else
-            {
-                stopTime = new HecTime(tmp, "0800");
-            }
-
-            dssFile.ts.setPathname(path);
-
-            dssFile.ts.setTimeWindow(startTime,stopTime);
-
-            if ( recordDaily && yearIndex == 0 )
+            if ( yearIndex == 0 )
             {
                 initDailyBuffer();
             }
@@ -1025,42 +977,63 @@ public class MainWindow extends javax.swing.JFrame {
         displayResults();
     }
 
-    private int QuackYear(String startDate, String endDate) {
+    private void DisplayErrorMessage(int rv) {
+        if (rv == -2) {
+            javax.swing.JOptionPane.showMessageDialog(this,
+                    "No dat found in Stage Area Curve",
+                    "Missing Data",
+                    javax.swing.JOptionPane.ERROR_MESSAGE);
+        } else if (rv == -3) {
+            javax.swing.JOptionPane.showMessageDialog(this,
+                    "Could not read Stage Area Curve",
+                    "Corrupt DSS File",
+                    javax.swing.JOptionPane.ERROR_MESSAGE);
+        }
+    }
+
+    private void SetupDatesForTimeSeries(int startYear, String startDate, String stopDate, int yearIndex) {
+        String partD = startDate + (startYear+yearIndex);
+        String path = GetRecordPath(partD);
+
+        // get the window start time
+        HecTime startTime = new HecTime(partD);
+        // set the time to 8 am
+        startTime.increment(8,60);
+        // set the window back exhaustionDays days
+        startTime.increment(-exhaustionDays,1440);
+
+        // get the window stop time
+        String tmp = stopDate + (startYear+yearIndex);
+        HecTime stopTime = null;
+        if ( DifferentYears(partD, tmp) )
+        {
+            tmp = stopDate + (startYear+yearIndex+1);
+            stopTime = new HecTime(tmp, "0800");
+        } else
+        {
+            stopTime = new HecTime(tmp, "0800");
+        }
+
+        dssFile.ts.setPathname(path);
+
+        dssFile.ts.setTimeWindow(startTime,stopTime);
+    }
+
+    private boolean DifferentYears(String startDate, String endDate) {
         String[] months = {"JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"};
         int startMonthIndex = -1;
         int endMonthIndex = -1;
         String startMonth = startDate.substring(2, 5);
         String endMonth = endDate.substring(2, 5);
+        startMonthIndex = Arrays.asList(months).indexOf(startMonth);
+        endMonthIndex = Arrays.asList(months).indexOf(endMonth);
 
-        //Find index of months in month list
-        for (int i = 0; i < months.length; i++)
-        {
-            if (startMonth.equals(months[i]))
-            {
-                startMonthIndex = i;
-                break;
-            }
-        }
-
-        for (int i = 0; i < months.length; i++)
-        {
-            if (endMonth.equals(months[i]))
-            {
-                endMonthIndex = i;
-                break;
-            }
-        }
-
-        if (startMonthIndex == -1 || endMonthIndex == -1)
-        {
-            return -2;
-        }
         if (startMonthIndex <= endMonthIndex)
         {
-            return 0;
+            return false;
         } else
         {
-            return -1;
+            return true;
         }
     }
 
