@@ -13,6 +13,7 @@ import hec.heclib.dss.*;
 import hec.heclib.util.*;
 import hec.io.*;             // Has TimeSeriesContainer
 
+import java.text.DateFormatSymbols;
 import java.util.prefs.*;
 
 
@@ -924,7 +925,7 @@ public class MainWindow extends javax.swing.JFrame {
     }//GEN-LAST:event_actionPerformed
 
     private void readDSS() {
-        dssFile = new DSSFile(lastFile, stageDataStr, jStageTable, stagePathsModel);
+        dssFile = new DSSFile(lastFile.getAbsolutePath(), stageDataStr, jStageTable, stagePathsModel);
         dssFile.loadDSSFile();
         dssFile.CreateStageDataStrings();
     }
@@ -999,7 +1000,7 @@ public class MainWindow extends javax.swing.JFrame {
 
             if ( recordDaily && yearIndex == 0 )
             {
-                initYearBuffer();
+                initDailyBuffer();
             }
 
             fAvg = 0;
@@ -1101,34 +1102,22 @@ public class MainWindow extends javax.swing.JFrame {
 
     private void getYearAverages()
     {
-        int rv;
-        doubleArrayContainer vals = new doubleArrayContainer();
+        doubleArrayContainer elevation = new doubleArrayContainer();
 
-        if (recordDaily == false)
-        {
-            rv = dssFile.ts.read(vals);
-        } else
-        {
-            dailyTime = new HecTimeArray();
-            rv = dssFile.ts.read(dailyTime, vals);
-        }
-
+        dailyTime = new HecTimeArray();
+        int rv = dssFile.ts.read(dailyTime, elevation);
         if( rv < 0) {
             InitializeErrorValues(rv);
             return;
         }
-
-        if (recordDaily)
-        {
-            updateDailyArrays();
-        }
+        updateDailyArrays();
 
         // get the rearing acres
-        fAvg =  getYearFeedingAverage(vals, recordDaily);
+        fAvg =  getYearFeedingAverage(elevation, recordDaily);
         //get the spawning acres
-        rAvg = getYearRestingAverage(vals, recordDaily);
+        rAvg = getYearRestingAverage(elevation, recordDaily);
 
-        stageAvg = getYearStageAverage(vals, recordDaily);
+        stageAvg = getYearStageAverage(elevation, recordDaily);
 
         if (recordDaily)
         {
@@ -1197,52 +1186,13 @@ public class MainWindow extends javax.swing.JFrame {
 
     /** getMonthName(int m)
      *
-     *  Convert a numerical mounth identifier into the correct string to be used
+     *  Convert a numerical month identifier into the correct string to be used
      *  in construction of an HecDate object */
 
     private String getMonthName(int m)
     {
-        switch(m)
-        {
-            case 1:
-                return "JAN";
-
-            case 2:
-                return "FEB";
-
-            case 3:
-                return "MAR";
-
-            case 4:
-                return "APR";
-
-            case 5:
-                return "MAY";
-
-            case 6:
-                return "JUN";
-
-            case 7:
-                return "JUL";
-
-            case 8:
-                return "AUG";
-
-            case 9:
-                return "SEP";
-
-            case 10:
-                return "OCT";
-
-            case 11:
-                return "NOV";
-
-            case 12:
-                return "DEC";
-
-            default:
-                return "JAN";
-        }
+        String[] months = new DateFormatSymbols().getShortMonths();
+        return months[m-1].toUpperCase();
     }
 
     /** double getYearFeedingAverage(doubleArrayContainer vals)
@@ -1486,7 +1436,7 @@ public class MainWindow extends javax.swing.JFrame {
         buffer.append(dssFile.ts.DSSFileName());
         buffer.append("\n");
 
-        buffer.append("Stage Elevatopn Path:\t");
+        buffer.append("Stage Elevation Path:\t");
         buffer.append(dssFile.ts.pathname());
         buffer.append("\n");
 
@@ -1594,13 +1544,12 @@ public class MainWindow extends javax.swing.JFrame {
 
     }
 
-    /** void initYearBuffer()
+    /** void initDailyBuffer()
      *
-     * This function is misnamed it should be initDaily Buffer.
      * The function initialises the buffer that holds the daily
      * calculations for each year */
 
-    private void initYearBuffer()
+    private void initDailyBuffer()
     {
         dBuffer = new StringBuffer();
         dBuffer.append("DSS File:\t");

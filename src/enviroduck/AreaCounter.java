@@ -1,7 +1,6 @@
 package enviroduck;
 
-class AreaCounter extends Object
-{
+class AreaCounter {
     public AreaCounter(double a, int c)
     {
         area = a;

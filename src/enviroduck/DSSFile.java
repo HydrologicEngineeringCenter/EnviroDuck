@@ -7,10 +7,19 @@ import hec.hecmath.DSS;
 
 public class DSSFile
 {
-    public DSSFile(java.io.File lastFile, String[] stageDataStr, javax.swing.JTable jStageTable,
+
+    public HecTimeSeries ts;
+    public HecPairedData pd;
+    private String[] stageDataStr;
+    private javax.swing.JTable jStageTable;
+    private javax.swing.table.DefaultTableModel stagePathsModel;
+
+    public String fileName;
+
+    public DSSFile(String dssFileName, String[] stageDataStr, javax.swing.JTable jStageTable,
                    javax.swing.table.DefaultTableModel stagePathsModel)
     {
-        this.lastFile = lastFile;
+        this.fileName = dssFileName;
         this.stageDataStr = stageDataStr;
         this.jStageTable = jStageTable;
         this.stagePathsModel = stagePathsModel;
@@ -23,8 +32,8 @@ public class DSSFile
         pd = new HecPairedData();
 
         // open the interfaces to the dss file
-        ts.setDSSFileName(lastFile.getAbsolutePath(),true);
-        pd.setDSSFileName(lastFile.getAbsolutePath(),true);
+        ts.setDSSFileName(dssFileName,true);
+        pd.setDSSFileName(dssFileName,true);
     }
 
     public void loadDSSFile()
@@ -37,8 +46,8 @@ public class DSSFile
         pd = new HecPairedData();
 
         // open the interfaces to the dss file
-        ts.setDSSFileName(lastFile.getAbsolutePath(),true);
-        pd.setDSSFileName(lastFile.getAbsolutePath(),true);
+        ts.setDSSFileName(fileName,true);
+        pd.setDSSFileName(fileName,true);
 
 
         for (int j = 0; j < stageDataStr.length; ++j) {
@@ -109,10 +118,5 @@ public class DSSFile
         }
     }
 
-    public HecTimeSeries ts;
-    public HecPairedData pd;
-    private java.io.File lastFile;
-    private String[] stageDataStr;
-    private javax.swing.JTable jStageTable;
-    private javax.swing.table.DefaultTableModel stagePathsModel;
+
 }
