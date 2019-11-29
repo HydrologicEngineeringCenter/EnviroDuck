@@ -3,6 +3,7 @@ package enviroduck;
 import hec.heclib.dss.CondensedReference;
 import hec.heclib.dss.HecPairedData;
 import hec.heclib.dss.HecTimeSeries;
+import hec.heclib.util.HecTime;
 import hec.hecmath.DSS;
 
 public class DSSFile
@@ -10,6 +11,8 @@ public class DSSFile
 
     public HecTimeSeries ts;
     public HecPairedData pd;
+    public HecTime startTime;
+    public HecTime endTime;
     private String[] stageDataStr;
     private javax.swing.JTable jStageTable;
     private javax.swing.table.DefaultTableModel stagePathsModel;

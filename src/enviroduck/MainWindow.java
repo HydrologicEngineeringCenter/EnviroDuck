@@ -9,12 +9,16 @@ package enviroduck;
  * @author  b4edhdwj
  **/
 
+import hec.data.TimeWindow;
+import hec.data.tx.DSSTimeSeries;
 import hec.heclib.dss.*;
 import hec.heclib.util.*;
 import hec.io.*;
 
 import java.text.DateFormatSymbols;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.prefs.*;
 
 
@@ -927,29 +931,34 @@ public class MainWindow extends javax.swing.JFrame {
 
     private void runRange(int startYear, int stopYear, String startDate, String stopDate)
     {
-        //read the stage area curve
-
         stageAreaCurve = new PairedDataContainer();
-        int rv = dssFile.pd.read(stageAreaCurve);
+        int status = dssFile.pd.read(stageAreaCurve);
 
-        if( rv !=0) {
-            DisplayErrorMessage(rv);
+        if( status !=0) {
+            DisplayErrorMessage(status);
             return;
         }
-        TimeSeriesContainer c = new TimeSeriesContainer();
-        calculator = new AreaCalculator(stageAreaCurve,c);
 
-        areaTable = calculator.makeAreaTable();
         int size = stopYear-startYear+1;
         years = new intArrayContainer(size);
         yearFeedingArea = new HecDoubleArray(size);
         yearRestingArea = new HecDoubleArray(size);
         yearAvgStage = new HecDoubleArray(size);
-
+        calculator = new AreaCalculator(stageAreaCurve);
+        List<AreaResult> resultList = new ArrayList<>();
         for(int yearIndex = 0; yearIndex < size; ++yearIndex )
         {
-            SetupDatesForTimeSeries(startYear, startDate, stopDate, yearIndex);
+            SetupDatesForTimeSeries(startYear+yearIndex,startDate, stopDate);
+            TimeSeriesContainer c = new TimeSeriesContainer();
+            HecTimeSeries ts = new HecTimeSeries(dssFile.fileName);
 
+            status = ts.ztsRetrieve(c,dssFile.ts.pathname(),
+                    dssFile.startTime,dssFile.endTime,false,0);
+
+
+           AreaResult annualResult = calculator.computeDuckAreas(c);
+            resultList.add(annualResult);
+            areaTable = calculator.makeAreaTable();
             if ( yearIndex == 0 )
             {
                 initDailyBuffer();
@@ -991,8 +1000,9 @@ public class MainWindow extends javax.swing.JFrame {
         }
     }
 
-    private void SetupDatesForTimeSeries(int startYear, String startDate, String stopDate, int yearIndex) {
-        String partD = startDate + (startYear+yearIndex);
+    private void SetupDatesForTimeSeries(int startYear, String startDate, String stopDate) {
+
+        String partD = startDate + (startYear);
         String path = GetRecordPath(partD);
 
         // get the window start time
@@ -1003,22 +1013,27 @@ public class MainWindow extends javax.swing.JFrame {
         startTime.increment(-exhaustionDays,1440);
 
         // get the window stop time
-        String tmp = stopDate + (startYear+yearIndex);
+        String tmp = stopDate + (startYear);
         HecTime stopTime = null;
         if ( DifferentYears(partD, tmp) )
         {
-            tmp = stopDate + (startYear+yearIndex+1);
+            tmp = stopDate + (startYear+1);
             stopTime = new HecTime(tmp, "0800");
         } else
         {
             stopTime = new HecTime(tmp, "0800");
         }
 
-        dssFile.ts.setPathname(path);
 
+        dssFile.ts.setPathname(path);
+        dssFile.startTime = startTime;
+        dssFile.endTime = stopTime;
         dssFile.ts.setTimeWindow(startTime,stopTime);
     }
 
+    /*
+     check if ending month is in a different year that staring month
+     */
     private boolean DifferentYears(String startDate, String endDate) {
         String[] months = {"JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"};
         int startMonthIndex = -1;
@@ -1028,13 +1043,7 @@ public class MainWindow extends javax.swing.JFrame {
         startMonthIndex = Arrays.asList(months).indexOf(startMonth);
         endMonthIndex = Arrays.asList(months).indexOf(endMonth);
 
-        if (startMonthIndex <= endMonthIndex)
-        {
-            return false;
-        } else
-        {
-            return true;
-        }
+        return startMonthIndex > endMonthIndex;
     }
 
     private String GetRecordPath(String partD) {
@@ -1092,10 +1101,7 @@ public class MainWindow extends javax.swing.JFrame {
 
         stageAvg = getYearStageAverage(elevation, recordDaily);
 
-        if (recordDaily)
-        {
-            appendResultsToDailyReport();
-        }
+        appendResultsToDailyReport();
     }
 
     private void InitializeErrorValues(int rv) {

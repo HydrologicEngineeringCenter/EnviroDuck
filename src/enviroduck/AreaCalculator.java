@@ -13,7 +13,7 @@ public class AreaCalculator {
     ArrayList<Double> incrementalStage ;
     ArrayList<Double> incrementalArea;
 
-    public AreaCalculator(PairedDataContainer ratingTable, TimeSeriesContainer tsc)
+    public AreaCalculator(PairedDataContainer ratingTable)
     {
         this.rawStage = ratingTable.xOrdinates;
         this.rawArea = ratingTable.yOrdinates[0];
@@ -21,6 +21,23 @@ public class AreaCalculator {
         incrementalArea = new ArrayList<Double>();
 
         makeIncrementalStageAndArea();
+    }
+
+    /**
+     * computeDuckAreas() computes
+     * average stage
+     * feeding area
+     * resting area
+     * total area
+     *
+     * on a daily and annual basis
+     * @return
+     */
+    public AreaResult computeDuckAreas( TimeSeriesContainer tsc)
+    {
+        AreaResult rval = new AreaResult();
+        // TO DO...
+        return rval;
     }
 
     public double lookupArea(double stage)
