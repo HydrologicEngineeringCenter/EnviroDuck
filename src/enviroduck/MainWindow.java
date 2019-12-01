@@ -945,6 +945,7 @@ public class MainWindow extends javax.swing.JFrame {
         yearRestingArea = new HecDoubleArray(size);
         yearAvgStage = new HecDoubleArray(size);
         calculator = new AreaCalculator(stageAreaCurve);
+        calculator.writeIncrementalStageTableToFile("incremental-stage-area.csv");
         List<AreaResult> resultList = new ArrayList<>();
         for(int yearIndex = 0; yearIndex < size; ++yearIndex )
         {
@@ -1092,10 +1093,11 @@ public class MainWindow extends javax.swing.JFrame {
             InitializeErrorValues(rv);
             return;
         }
-        updateDailyArrays();
+        int size = dailyTime.getIntArray().length;
+        updateDailyArrays(size);
 
         // get the rearing acres
-        fAvg =  getYearFeedingAverage(elevation, recordDaily);
+        fAvg =  getYearFeedingAverage(elevation);
         //get the spawning acres
         rAvg = getYearRestingAverage(elevation, recordDaily);
 
@@ -1185,7 +1187,7 @@ public class MainWindow extends javax.swing.JFrame {
         return Math.round(x * 10) / 10.0;
     }
 
-    private double getYearFeedingAverage(doubleArrayContainer stages, boolean recordDaily)
+    private double getYearFeedingAverage(doubleArrayContainer stages)
     {
         double total = 0, sum;
 
@@ -1197,16 +1199,14 @@ public class MainWindow extends javax.swing.JFrame {
 
         for(int i = exhaustionDays; i < stages.array.length; ++i )
         {
-            if (recordDaily){
-                dailyExaustion.set(i, exhaustionDepth);
-            }
+            dailyExaustion.set(i, exhaustionDepth);
 
             // determine the viable feeding range for this day
             double hs = stages.array[i];
             double bottom = hs - maxDepth;
             double ls = (bottom > exhaustionDepth) ? bottom : exhaustionDepth;
 
-            // round the high stage nad low stage to 10th of a foot increments
+            // round the high stage and low stage to 10th of a foot increments
             hs = RoundToTenth(hs);
             ls = RoundToTenth(ls);
             sum = 0;
@@ -1230,7 +1230,7 @@ public class MainWindow extends javax.swing.JFrame {
                         }
                         else
                         {
-                            System.out.println("oops");
+                            System.out.println("depleted?");
                         }
                     }
                     stage = RoundToTenth(stage+0.1);
@@ -1249,9 +1249,7 @@ public class MainWindow extends javax.swing.JFrame {
 
             total += sum;
 
-            if (recordDaily){
-                dailyFeeding.set(i,sum);
-            }
+            dailyFeeding.set(i,sum);
 
         }
 
@@ -1609,47 +1607,12 @@ public class MainWindow extends javax.swing.JFrame {
      * Make sure that the arrays used to hold the daily values for the current year
      * exist and are the correct size */
 
-    private void updateDailyArrays()
+    private void updateDailyArrays(int size)
     {
-        int size = dailyTime.getIntArray().length;
-
-        if ( dailyStage == null )
-        {
-            dailyStage = new HecDoubleArray(size);
-        }
-        else
-        {
-            dailyStage.setSize(size);
-        }
-
-        if ( dailyResting == null )
-        {
-            dailyResting = new HecDoubleArray(size);
-        }
-        else
-        {
-            dailyResting.setSize(size);
-        }
-
-        if ( dailyFeeding == null )
-        {
-            dailyFeeding = new HecDoubleArray(size);
-        }
-        else
-        {
-            dailyFeeding.setSize(size);
-        }
-
-        if ( dailyExaustion == null )
-        {
-            dailyExaustion = new HecDoubleArray(size);
-        }
-        else
-        {
-            dailyExaustion.setSize(size);
-        }
-
-
+        dailyStage = new HecDoubleArray(size);
+        dailyResting = new HecDoubleArray(size);
+        dailyFeeding = new HecDoubleArray(size);
+        dailyExaustion = new HecDoubleArray(size);
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables

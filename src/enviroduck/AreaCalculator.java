@@ -3,6 +3,8 @@ import hec.io.PairedDataContainer;
 import hec.io.PairedDataContainerVertDatum;
 import hec.io.TimeSeriesContainer;
 
+import java.io.File;
+import java.io.PrintWriter;
 import java.util.*;
 
 public class AreaCalculator {
@@ -12,6 +14,7 @@ public class AreaCalculator {
     private double rawArea[];
     ArrayList<Double> incrementalStage ;
     ArrayList<Double> incrementalArea;
+    ArrayList<Double> totalArea;
 
     public AreaCalculator(PairedDataContainer ratingTable)
     {
@@ -19,6 +22,7 @@ public class AreaCalculator {
         this.rawArea = ratingTable.yOrdinates[0];
         incrementalStage = new ArrayList<Double>();
         incrementalArea = new ArrayList<Double>();
+        totalArea = new ArrayList<Double>();
 
         makeIncrementalStageAndArea();
     }
@@ -37,7 +41,29 @@ public class AreaCalculator {
     {
         AreaResult rval = new AreaResult();
         // TO DO...
+
         return rval;
+    }
+
+    public String writeIncrementalStageTableToFile(String fileName){
+        PrintWriter out=null;
+        try {
+            int size = incrementalStage.size();
+            out = new PrintWriter( fileName, "UTF-8");
+            out.println("stage,incrementalArea, totalArea");
+
+            for (int i = 0; i < size; i++) {
+                out.println(incrementalStage.get(i)+", "+incrementalArea.get(i)+", "+totalArea.get(i));
+            }
+        }
+        catch(Exception e)
+        {
+            System.out.println(e.getLocalizedMessage());
+        }
+        finally{
+            out.close();
+        }
+        return "";
     }
 
     public double lookupArea(double stage)
@@ -101,10 +127,12 @@ public class AreaCalculator {
         {
             double area2 = lookupArea( x + 0.1);
             double area1 =  lookupArea( x);
+            double areaTotal =  lookupArea( x);
             double diff = area2 - area1;
 
             incrementalStage.add(x);
             incrementalArea.add(diff);
+            totalArea.add(areaTotal);
         }
     }
 
