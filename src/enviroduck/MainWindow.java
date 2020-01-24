@@ -9,15 +9,12 @@ package enviroduck;
  * @author  b4edhdwj
  **/
 
-import hec.data.TimeWindow;
-import hec.data.tx.DSSTimeSeries;
 import hec.heclib.dss.*;
 import hec.heclib.util.*;
 import hec.io.*;
 
 import java.text.DateFormatSymbols;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.prefs.*;
 
@@ -920,7 +917,7 @@ public class MainWindow extends javax.swing.JFrame {
     }//GEN-LAST:event_actionPerformed
 
     private void readDSS() {
-        dssFile = new DSSFile(lastFile.getAbsolutePath(), stageDataStr, jStageTable, stagePathsModel);
+        dssFile = new DSSDatabase(lastFile.getAbsolutePath(), stageDataStr, jStageTable, stagePathsModel);
         dssFile.loadDSSFile();
         dssFile.CreateStageDataStrings();
     }
@@ -929,7 +926,7 @@ public class MainWindow extends javax.swing.JFrame {
      * run model on the time period indicated in the text boxes
      **/
 
-    private void runRange(int startYear, int stopYear, String startDate, String stopDate)
+    private void runRange(int startYear, int stopYear, String startDDMMM, String stopDDMMM)
     {
         stageAreaCurve = new PairedDataContainer();
         int status = dssFile.pd.read(stageAreaCurve);
@@ -949,16 +946,11 @@ public class MainWindow extends javax.swing.JFrame {
         List<AreaResult> resultList = new ArrayList<>();
         for(int yearIndex = 0; yearIndex < size; ++yearIndex )
         {
-            SetupDatesForTimeSeries(startYear+yearIndex,startDate, stopDate);
-            TimeSeriesContainer c = new TimeSeriesContainer();
-            HecTimeSeries ts = new HecTimeSeries(dssFile.fileName);
-
-            status = ts.ztsRetrieve(c,dssFile.ts.pathname(),
-                    dssFile.startTime,dssFile.endTime,false,0);
+           dssFile.readTimeSeries( currentPath,exhaustionDays,startYear+yearIndex,startDDMMM, stopDDMMM);
 
 
-           AreaResult annualResult = calculator.computeDuckAreas(c);
-            resultList.add(annualResult);
+          // AreaResult annualResult = calculator.computeDuckAreas(c);
+           // resultList.add(annualResult);
             areaTable = calculator.makeAreaTable();
             if ( yearIndex == 0 )
             {
@@ -1001,65 +993,6 @@ public class MainWindow extends javax.swing.JFrame {
         }
     }
 
-    private void SetupDatesForTimeSeries(int startYear, String startDate, String stopDate) {
-
-        String partD = startDate + (startYear);
-        String path = GetRecordPath(partD);
-
-        // get the window start time
-        HecTime startTime = new HecTime(partD);
-        // set the time to 8 am
-        startTime.increment(8,60);
-        // set the window back exhaustionDays days
-        startTime.increment(-exhaustionDays,1440);
-
-        // get the window stop time
-        String tmp = stopDate + (startYear);
-        HecTime stopTime = null;
-        if ( DifferentYears(partD, tmp) )
-        {
-            tmp = stopDate + (startYear+1);
-            stopTime = new HecTime(tmp, "0800");
-        } else
-        {
-            stopTime = new HecTime(tmp, "0800");
-        }
-
-
-        dssFile.ts.setPathname(path);
-        dssFile.startTime = startTime;
-        dssFile.endTime = stopTime;
-        dssFile.ts.setTimeWindow(startTime,stopTime);
-    }
-
-    /*
-     check if ending month is in a different year that staring month
-     */
-    private boolean DifferentYears(String startDate, String endDate) {
-        String[] months = {"JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"};
-        int startMonthIndex = -1;
-        int endMonthIndex = -1;
-        String startMonth = startDate.substring(2, 5);
-        String endMonth = endDate.substring(2, 5);
-        startMonthIndex = Arrays.asList(months).indexOf(startMonth);
-        endMonthIndex = Arrays.asList(months).indexOf(endMonth);
-
-        return startMonthIndex > endMonthIndex;
-    }
-
-    private String GetRecordPath(String partD) {
-        String path;
-        int pos1, pos2;
-
-        pos1 = currentPath.indexOf("/",1);    // 2nd /
-        pos1 = currentPath.indexOf("/",pos1+1); // 3rd /
-        pos1 = currentPath.indexOf("/",pos1+1); // 4th /
-        pos2 = currentPath.indexOf("/",pos1+1); // 5th /
-
-        // make the path for the current year
-        path = currentPath.substring(0,pos1+1)+ partD+currentPath.substring(pos2);
-        return path;
-    }
 
 
     /** clearAreaTable()
@@ -1460,17 +1393,20 @@ public class MainWindow extends javax.swing.JFrame {
 
         String fileName =  dssFile.ts.aPart() + "_" + dssFile.ts.bPart() + "_" + dssFile.ts.fPart();
         fileName += ".evd";
-        String filePath = outputDirPath + "/" + fileName;
+
+
+        if( outputDirPath != "")
+            fileName = outputDirPath+"\\"+fileName;
         try
         {
-            java.io.FileWriter writer = new java.io.FileWriter(filePath);
+            java.io.FileWriter writer = new java.io.FileWriter(fileName);
             writer.write(buffer.toString());
             writer.close();
         }
         catch(java.io.IOException io_excep)
         {
             javax.swing.JOptionPane.showMessageDialog(this,
-                    "Error writing file " + filePath,
+                    "Error writing file " + fileName,
                     "IOError",
                     javax.swing.JOptionPane.ERROR_MESSAGE);
 
@@ -1671,7 +1607,7 @@ public class MainWindow extends javax.swing.JFrame {
 
     private java.util.HashMap<Double, AreaCounter> areaTable;
     private AreaCalculator calculator;
-    private DSSFile dssFile;
+    private DSSDatabase dssFile;
 
     javax.swing.text.NumberFormatter df;
     javax.swing.text.NumberFormatter df2;
