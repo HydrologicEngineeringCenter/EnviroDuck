@@ -206,7 +206,7 @@ public class MainWindow extends javax.swing.JFrame {
         getContentPane().setLayout(null);
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
-        setTitle("Enviro Duck  1.0.1");
+        setTitle("Enviro Duck  1.0.2");
         setResizable(false);
         jDSSFilename.setToolTipText("The path to the DSS File");
         getContentPane().add(jDSSFilename);
@@ -1531,6 +1531,8 @@ public class MainWindow extends javax.swing.JFrame {
             for( int j = 0; j < 10; ++j)
             {
                 double key = i + (j * 0.1);
+                if( !areaTable.containsKey(key))
+                    continue;
                 double val = (areaTable.get(key)).area;
 
                 dBuffer.append(key + "\t" + val + "\n");
